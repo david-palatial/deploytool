@@ -43,7 +43,7 @@ if command == "reset":
     sys.exit(0)
   branch = sys.argv[2]
   image_tag = None
-  if len(sys.argv) == 5 and sys.argv[3] == "-t" or sys.argv[3] == "--tag":
+  if len(sys.argv) == 5 and (sys.argv[3] == "-t" or sys.argv[3] == "--tag"):
     image_tag = f"{branch}:{sys.argv[4]}"
   reset_application(branch, image_tag)
   sys.exit(0)

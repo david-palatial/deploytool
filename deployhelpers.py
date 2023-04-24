@@ -7,6 +7,23 @@ import threading
 import docker
 import json
 
+# Get the full path of the executable file
+exe_path = os.path.abspath(__file__)
+
+# Construct the full path of the "options.json" file
+options_path = os.path.join(os.path.dirname(exe_path), "options.json")
+
+def try_get_application(name):
+  command = f"sps-client application info --name {name}"
+  try:
+    output = subprocess.check_output(command, shell=True, stderr=subprocess.PIPE)
+
+    data = json.loads(output.decode())
+
+    return True, data
+  except subprocess.CalledProcessError as e:
+    return False, None
+
 def does_image_tag_exist(client, image, tag):
     try:
         client.images.get(f"{image}:{tag}")
@@ -14,66 +31,79 @@ def does_image_tag_exist(client, image, tag):
     except docker.errors.ImageNotFound:
         return False
 
+
 def switch_active_version(branch, version):
-  sys.stdout.write("Setting active version...\n")
-  subprocess.run(f"sps-client application update --name {branch} --activeVersion {version}")
+    print("Setting active version...\n")
+    subprocess.run(
+        f"sps-client application update --name {branch} --activeVersion {version}"
+    )
 
 def set_new_version(branch, version):
-  container_tag = f'docker.io/dgodfrey206/{branch}:{version}'
-  sys.stdout.write("Creating new version...")
-  subprocess.check_output("timeout 2")
-  subprocess.run(f"sps-client version create --application {branch} --name {version} --buildOptions.input.containerTag {container_tag} --buildOptions.credentials.registry \"https://index.docker.io/v1/\"")
-  switch_active_version(branch, version)
+    container_tag = f"docker.io/dgodfrey206/{branch}:{version}"
+    print("Creating new version...")
+    subprocess.check_output("timeout 2")
+    subprocess.run(
+        ['sps-client', 'version', 'create', '--application', branch, '--name', version, '--buildOptions.input.containerTag', container_tag, '--buildOptions.credentials.registry', "https://index.docker.io/v1/", '-f', options_path ]
+    )
+    switch_active_version(branch, version)
+
 
 def make_new_application(branch, version, step=1):
-  sys.stdout.write("Creating application")
-  if step != 1:
-    print_dots(25)
-  subprocess.run(f"sps-client application create --name {branch}")
-  set_new_version(branch, version)
+    sys.stdout.write("Creating application")
+    if step != 1:
+        print_dots(25)
+    subprocess.run(f"sps-client application create --name {branch}")
+    set_new_version(branch, version)
 
 
 def reset_application(branch, image_tag=None):
-  cmd = f'sps-client application read --name "{branch}"'
-  output = subprocess.check_output(cmd, shell=True)
+    step = 0
 
-  # Parse the JSON data into a Python dictionary
-  data = json.loads(output)
+    exists, data = try_get_application(branch)
 
-  activeVersion = data['response']['activeVersion']
+    if exists:
+        activeVersion = data["response"]["activeVersion"]
 
-  if image_tag == None:
-    image_tag = f"{branch}:{activeVersion}"
+        if image_tag == None:
+            image_tag = f"{branch}:{activeVersion}"
 
-  container_tag = f"docker.io/dgodfrey206/{image_tag}"
+        container_tag = f"docker.io/dgodfrey206/{image_tag}"
 
-  step = 1
-  print("Delete {branch}")
+        step = 1
+        print(f"Delete {branch}...")
 
-  subprocess.run(f"sps-client application delete --name {branch}")
-  make_new_application(branch, image_tag.split(':')[1], step + 1)
+        subprocess.run(f"sps-client application delete --name {branch}")
 
-  sys.stdout.write("Finishing up")
-  print_dots(18)
-  print(f"\n\n{branch} reset: https://{branch}.palatialxr.com")
+    if image_tag == None:
+        print(
+            f"error: app '{branch}' does not exist. deploy a new build or provide an existing version to reset to (i.e sps-app reset {branch} --tag 23-03-14_build-A_CD_RelatedBanyan)"
+        )
+        sys.exit(1)
 
+    make_new_application(branch, image_tag.split(":")[1], step + 1)
+
+    sys.stdout.write("Finishing up")
+    print_dots(18)
+    print(f"\n\n{branch} reset: https://{branch}.palatialxr.com")
 
 
 def show_help():
     print(
-        "usage: deploy <dir> [-b or --branch] <branch> [options...]\n\
+        "usage: sps-app deploy <dir> [-b or --branch] <branch> [options...]\n\
 -A, --app-only     Only deploy the client\n\
 -b, --branch       The application branch to deploy to (dev, demo, prophet, etc.)\n\
 -h, --help         Get help for commands\n\
 -S, --server-only  Only deploy the server\n"
     )
-    print("Example: deploy 22-11-23_build-A-CD --branch dev")
+    print("Example: sps-app deploy 22-11-23_build-A-CD --branch dev")
+
 
 def print_periodic(interval):
     while True:
-        sys.stdout.write('. ')
+        sys.stdout.write(". ")
         sys.stdout.flush()
         time.sleep(interval)
+
 
 def print_dots(duration):
     q = queue.Queue()
@@ -158,10 +188,9 @@ def deploy(argv):
         print("Example: deploy 22-11-23_build-A-CD --branch dev")
         sys.exit(1)
 
-    image_tag = f"{branch}:{os.path.basename(dir_name)}"
-
     os.chdir(dir_name)
     dir_name = os.path.basename(dir_name)
+    image_tag = f"{branch}:{dir_name}"
 
     if not server_only:
         os.chdir("LinuxClient")
@@ -205,7 +234,7 @@ def deploy(argv):
             with open("Dockerfile", "w") as f:
                 f.write(dockerfile_dep)
             os.system(f"docker build -t {image_tag} .")
-
+        sys.exit(0)
         with open("Dockerfile", "w") as f:
             f.write(dockerfile_sps)
 
@@ -213,15 +242,15 @@ def deploy(argv):
         os.system(f"docker tag {image_tag} dgodfrey206/{image_tag}")
         os.system(f"docker push dgodfrey206/{image_tag}")
 
-        cmd = f'sps-client application info --name "{branch}"'
-        output = subprocess.check_output(cmd, shell=True)
+        exists, data = try_get_application(branch)
 
-        data = json.loads(output)
-
-        version = image_tag.split(':')[1]
+        version = image_tag.split(":")[1]
 
         # Set a new version if this version doesn't already exist
-        if data['statusCode'] == 200 and not data['response']['activeVersion'] or data['response']['activeVersion']['name'] != version:
+        if (
+            exists and (not bool(data["response"]["activeVersion"])
+            or data["response"]["activeVersion"]["name"] != version)
+        ):
             set_new_version(branch, version)
         else:
             make_new_application(branch, version)
@@ -239,7 +268,7 @@ def deploy(argv):
             f'ssh david@prophet.palatialxr.com "sudo systemctl start server_{branch}.service"'
         )
         subprocess.run(
-            f'ssh david@prophet.palatialxr.com "echo \"{dir_name}\" >> ~/servers/{branch}/version.log"'
+            f'ssh david@prophet.palatialxr.com "echo "{dir_name}" >> ~/servers/{branch}/version.log"'
         )
 
     print("FINISHED")

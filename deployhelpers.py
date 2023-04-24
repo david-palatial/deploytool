@@ -234,7 +234,7 @@ def deploy(argv):
             with open("Dockerfile", "w") as f:
                 f.write(dockerfile_dep)
             os.system(f"docker build -t {image_tag} .")
-        sys.exit(0)
+
         with open("Dockerfile", "w") as f:
             f.write(dockerfile_sps)
 

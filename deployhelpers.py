@@ -12,6 +12,8 @@ exe_path = os.path.abspath(__file__)
 
 # Construct the full path of the "options.json" file
 options_path = os.path.join(os.path.dirname(exe_path), "options.json")
+docker_dep_path = os.path.join(os.path.dirname(exe_path), "docker_dep.txt")
+docker_sps_path = os.path.join(os.path.dirname(exe_path), "docker_sps.txt")
 
 def try_get_application(name):
   command = f"sps-client application info --name {name}"
@@ -48,43 +50,45 @@ def set_new_version(branch, version):
     switch_active_version(branch, version)
 
 
-def make_new_application(branch, version, step=1):
+def make_new_application(branch, version):
     sys.stdout.write("Creating application")
-    if step != 1:
-        print_dots(25)
+    print_dots(25)
     subprocess.run(f"sps-client application create --name {branch}")
     set_new_version(branch, version)
 
 
 def reset_application(branch, image_tag=None):
-    step = 0
-
     exists, data = try_get_application(branch)
 
     if exists:
         activeVersion = data["response"]["activeVersion"]
 
         if image_tag == None:
-            image_tag = f"{branch}:{activeVersion}"
+            if not activeVersion:
+                print(f"error: app '{branch}' has no set version. can't reset")
+                sys.exit(1)
+            image_tag = f"{branch}:{activeVersion['name']}"
 
         container_tag = f"docker.io/dgodfrey206/{image_tag}"
 
-        step = 1
         print(f"Delete {branch}...")
 
         subprocess.run(f"sps-client application delete --name {branch}")
+    else:
+        print(f"error: app '{branch}' does not exist")
+        sys.exit(1)
 
     if image_tag == None:
         print(
             f"error: app '{branch}' does not exist. deploy a new build or provide an existing version to reset to (i.e sps-app reset {branch} --tag 23-03-14_build-A_CD_RelatedBanyan)"
         )
         sys.exit(1)
-
-    make_new_application(branch, image_tag.split(":")[1], step + 1)
+    version = image_tag.split(':')[1].lower().replace('_', '-')
+    make_new_application(branch, version)
 
     sys.stdout.write("Finishing up")
     print_dots(18)
-    print(f"\n\n{branch} reset: https://{branch}.palatialxr.com")
+    print("FINISHED")
 
 
 def show_help():
@@ -93,7 +97,8 @@ def show_help():
 -A, --app-only     Only deploy the client\n\
 -b, --branch       The application branch to deploy to (dev, demo, prophet, etc.)\n\
 -h, --help         Get help for commands\n\
--S, --server-only  Only deploy the server\n"
+-S, --server-only  Only deploy the server\n\
+    --config       Path to the JSON configuration file\n"
     )
     print("Example: sps-app deploy 22-11-23_build-A-CD --branch dev")
 
@@ -142,6 +147,8 @@ def deploy(argv):
         "--help",
         "-S",
         "--server-only",
+        "--app-only",
+        "--config"
     ]
 
     argv = argv.split()
@@ -170,13 +177,18 @@ def deploy(argv):
             app_only = True
         if opt == "-S" or opt == "--server-only":
             server_only = True
+        if opt == "--config":
+            if i + 1 >= len(argv):
+                print("error: --config provided without a path")
+                sys.exit(1)
+            options_path = argv[i + 1]
 
     if not os.path.exists(dir_name):
-        print(f"Directory {dir_name} does not exist.")
+        print(f"error: directory {dir_name} does not exist.")
         sys.exit(1)
 
     if app_only and not os.path.exists(os.path.join(dir_name, "LinuxClient")):
-        print("error: file LinuxClient does not exist".format(dir_name))
+        print("error: file LinuxClient does not exist in {}".format(dir_name))
         sys.exit(1)
 
     if server_only and not os.path.exists(os.path.join(dir_name, "LinuxServer")):
@@ -184,15 +196,19 @@ def deploy(argv):
         sys.exit(1)
 
     if branch == None:
-        print("error: -b or --branch is required (one of dev, prophet, demo, etc..)")
-        print("Example: deploy 22-11-23_build-A-CD --branch dev")
+        print("error: -b or --branch is required (one of dev, prophet, demo, etc.)")
+        print("Example: sps-app deploy 22-11-23_build-A-CD --branch dev")
         sys.exit(1)
 
     os.chdir(dir_name)
-    dir_name = os.path.basename(dir_name)
+    dir_name = os.path.basename(dir_name).lower().replace('_', '-')
     image_tag = f"{branch}:{dir_name}"
 
     if not server_only:
+        if not os.path.exists(os.path.join(os.getcwd(), "LinuxClient")):
+            print("error: file LinuxClient does not exist in {}".format(os.path.abspath(os.getcwd())))
+            sys.exit(1)
+
         os.chdir("LinuxClient")
 
         # Define the base image
@@ -228,15 +244,29 @@ def deploy(argv):
 	"""
 
         # Add dependencies if image tag does not exist
-        client = docker.from_env()
+        client = None
+        try:
+            client = docker.from_env()
+            client.ping()
+        except docker.errors.DockerException:
+            print("error: Docker Desktop is not running.")
+            sys.exit(1)
+
+        client.login(username='dgodfrey206', password='applesauce', registry='https://index.docker.io/v1/')
+
         if not does_image_tag_exist(client, branch, dir_name):
             # Write the Dockerfile to a file
             with open("Dockerfile", "w") as f:
-                f.write(dockerfile_dep)
+                with open(docker_dep_path, "r") as src:
+                    contents = src.read()
+                    f.write(contents)
+
             os.system(f"docker build -t {image_tag} .")
 
         with open("Dockerfile", "w") as f:
-            f.write(dockerfile_sps)
+            with open(docker_sps_path, "r") as src:
+                contents = src.read()
+                f.write(contents)
 
         os.system(f"docker build -t {image_tag} .")
         os.system(f"docker tag {image_tag} dgodfrey206/{image_tag}")
@@ -254,10 +284,16 @@ def deploy(argv):
             set_new_version(branch, version)
         else:
             make_new_application(branch, version)
+            sys.stdout.write("Finishing up")
+            print_dots(18)
         os.chdir("..")
 
     if not app_only:
         print("Uploading server...")
+        if not os.path.exists(os.path.join(os.getcwd(), "LinuxServer")):
+            print("error: file LinuxServer does not exist in {}".format(os.path.abspath(os.getcwd())))
+            sys.exit(1)
+
         subprocess.run(
             f'ssh david@prophet.palatialxr.com "sudo systemctl stop server_{branch}.service"'
         )

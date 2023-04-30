@@ -40,12 +40,15 @@ def switch_active_version(branch, version):
         f"sps-client application update --name {branch} --activeVersion {version}"
     )
 
-def set_new_version(branch, version):
+def set_new_version(branch, version, path=options_path, resetting=False):
     container_tag = f"docker.io/dgodfrey206/{branch}:{version}"
+    if resetting == True:
+        print("Deleting version...")
+        subprocess.run(f"sps-client version delete --name {version} --application {branch}")
     print("Creating new version...")
     subprocess.check_output("timeout 2")
     subprocess.run(
-        ['sps-client', 'version', 'create', '--application', branch, '--name', version, '--buildOptions.input.containerTag', container_tag, '--buildOptions.credentials.registry', "https://index.docker.io/v1/", '-f', options_path ]
+        ['sps-client', 'version', 'create', '--application', branch, '--name', version, '--buildOptions.input.containerTag', container_tag, '--buildOptions.credentials.registry', "https://index.docker.io/v1/", '-f', path ]
     )
     switch_active_version(branch, version)
 
@@ -55,7 +58,6 @@ def make_new_application(branch, version):
     print_dots(25)
     subprocess.run(f"sps-client application create --name {branch}")
     set_new_version(branch, version)
-
 
 def reset_application(branch, image_tag=None):
     exists, data = try_get_application(branch)
@@ -151,6 +153,7 @@ def deploy(argv):
         "--config"
     ]
 
+    reset_version = False
     argv = argv.split()
 
     if len(argv) < 1:
@@ -182,6 +185,7 @@ def deploy(argv):
                 print("error: --config provided without a path")
                 sys.exit(1)
             options_path = argv[i + 1]
+            reset_version = True
 
     if not os.path.exists(dir_name):
         print(f"error: directory {dir_name} does not exist.")
@@ -277,12 +281,9 @@ def deploy(argv):
         version = image_tag.split(":")[1]
 
         # Set a new version if this version doesn't already exist
-        if (
-            exists and (not bool(data["response"]["activeVersion"])
-            or data["response"]["activeVersion"]["name"] != version)
-        ):
-            set_new_version(branch, version)
-        else:
+        if (exists and reset_version == True):
+            set_new_version(branch, version, os.path.join("..", options_path), bool(data['response']['activeVersion']))
+        elif not exists:
             make_new_application(branch, version)
             sys.stdout.write("Finishing up")
             print_dots(18)

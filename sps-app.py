@@ -43,6 +43,7 @@ Example: sps-app update prophet overProvisioning.instances \"3\"")
 update_options = [
   "--add-volume-mount",
   "--remove-volume-mount"
+  "-h", "--help"
 ]
 
 command = sys.argv[1];
@@ -84,6 +85,10 @@ if command == "update":
     if elem not in update_options:
       print(f"error: invalid option {elem}")
       sys.exit(1)
+  for elem in sys.argv[3:]:
+    if elem == "-h" or elem == "--help":
+      show_update_help()
+      sys.exit(0)
   for elem in sys.argv[3:]:
     if elem == "--add-volume-mount":
       if removed:

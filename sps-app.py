@@ -42,7 +42,7 @@ Example: sps-app update prophet overProvisioning.instances \"3\"")
 
 update_options = [
   "--add-volume-mount",
-  "--remove-volume-mount"
+  "--remove-volume-mount",
   "-h", "--help"
 ]
 

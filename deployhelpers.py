@@ -12,6 +12,7 @@ exe_path = os.path.abspath(__file__)
 
 # Construct the full path of the "options.json" file
 options_path = os.path.join(os.path.dirname(exe_path), "options.json")
+persistent_volume_path = os.path.join(os.path.dirname(exe_path), "pvc.json")
 docker_dep_path = os.path.join(os.path.dirname(exe_path), "docker_dep.txt")
 docker_sps_path = os.path.join(os.path.dirname(exe_path), "docker_sps.txt")
 
@@ -40,7 +41,7 @@ def switch_active_version(branch, version):
         f"sps-client application update --name {branch} --activeVersion {version}"
     )
 
-def set_new_version(branch, version, path=options_path, resetting=False):
+def set_new_version(branch, version, resetting=False, path=options_path):
     container_tag = f"docker.io/dgodfrey206/{branch}:{version}"
     if resetting == True:
         print("Deleting version...")
@@ -52,6 +53,12 @@ def set_new_version(branch, version, path=options_path, resetting=False):
     )
     switch_active_version(branch, version)
 
+def reset_app_version(branch, path=options_path):
+    exists, data = try_get_application(branch)
+    if exists:
+      if data['response']['activeVersion']:
+        version = data['response']['activeVersion']['name']
+        set_new_version(branch, version, resetting=True, path=path)
 
 def make_new_application(branch, version):
     sys.stdout.write("Creating application")
@@ -96,11 +103,13 @@ def reset_application(branch, image_tag=None):
 def show_help():
     print(
         "usage: sps-app deploy <dir> [-b or --branch] <branch> [options...]\n\
--A, --app-only     Only deploy the client\n\
--b, --branch       The application branch to deploy to (dev, demo, prophet, etc.)\n\
--h, --help         Get help for commands\n\
--S, --server-only  Only deploy the server\n\
-    --config       Path to the JSON configuration file\n"
+-A, --app-only            Only deploy the client\n\
+-b, --branch              The application branch to deploy to (dev, demo, prophet, etc.)\n\
+-h, --help                Get help for commands\n\
+-S, --server-only         Only deploy the server\n\
+    --add-volume-mount    Add a 100GB storage volume to the application\n\
+    --remove-volume-mount Remove the existing storage volume\n\
+    --config              Path to the JSON configuration file\n"
     )
     print("Example: sps-app deploy 22-11-23_build-A-CD --branch dev")
 
@@ -139,6 +148,8 @@ def deploy(argv):
     app_only = False
     server_only = False
 
+    global options_path
+
     options = [
         "-h",
         "--help",
@@ -150,7 +161,9 @@ def deploy(argv):
         "-S",
         "--server-only",
         "--app-only",
-        "--config"
+        "--config",
+        "--add-volume-mount",
+        "--remove-volume-mount"
     ]
 
     reset_version = False
@@ -185,6 +198,11 @@ def deploy(argv):
                 print("error: --config provided without a path")
                 sys.exit(1)
             options_path = argv[i + 1]
+            reset_version = True
+        if opt == "--add-volume-mount":
+            options_path = persistent_volume_path
+            reset_version = True
+        if opt == "--remove-volume-mount":
             reset_version = True
 
     if not os.path.exists(dir_name):
@@ -282,7 +300,7 @@ def deploy(argv):
 
         # Set a new version if this version doesn't already exist
         if (exists and reset_version == True):
-            set_new_version(branch, version, os.path.join("..", options_path), bool(data['response']['activeVersion']))
+            set_new_version(branch, version, resetting=bool(data['response']['activeVersion']), path=os.path.join("..", options_path))
         elif not exists:
             make_new_application(branch, version)
             sys.stdout.write("Finishing up")

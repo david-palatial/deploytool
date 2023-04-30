@@ -8,7 +8,7 @@ a = Analysis(
     ['sps-app.py'],
     pathex=[],
     binaries=[],
-    datas=[('options.json', '.'), ('docker_sps.txt', '.'), ('docker_dep.txt', '.')],
+    datas=[('options.json', '.'), ('docker_sps.txt', '.'), ('docker_dep.txt', '.'), ('pvc.json', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

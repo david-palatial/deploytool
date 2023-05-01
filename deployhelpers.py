@@ -141,12 +141,80 @@ def print_dots(duration):
         print(item, end="")
         sys.stdout.flush()
 
+def build_docker_image(branch, image_tag):
+    # Define the base image
+    base_image = "adamrehn/ue4-runtime:20.04-cudagl11.1.1"
+
+    # Define the Dockerfile contents
+    dockerfile_dep = f"""
+        FROM {base_image}
+
+        USER root
+
+        # Import NVIDIA GPG key
+        RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
+
+        # Update packages
+        RUN apt-get update 
+
+        # Install libsecret
+        RUN apt-get install -y libsecret-1-0
+        """
+
+    dockerfile_sps = f"""
+        FROM {base_image}
+
+        # Copy the packaged project files from the build context
+        COPY --chown=ue4:ue4 . /home/ue4/project
+
+        # Ensure the project's startup script is executable
+        RUN chmod +x "/home/ue4/project/ThirdTurn_TemplateClient.sh"
+
+        # Set the project's startup script as the container's entrypoint
+        ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_TemplateClient.sh"]
+	"""
+
+    # Add dependencies if image tag does not exist
+    client = None
+    try:
+        client = docker.from_env()
+        client.ping()
+    except docker.errors.DockerException:
+        print("error: Docker Desktop is not running.")
+        sys.exit(1)
+
+    client.login(
+        username="dgodfrey206",
+        password="applesauce",
+        registry="https://index.docker.io/v1/",
+    )
+
+    if not does_image_tag_exist(client, branch, dir_name):
+        # Write the Dockerfile to a file
+        with open("Dockerfile", "w") as f:
+            with open(docker_dep_path, "r") as src:
+                contents = src.read()
+                f.write(contents)
+
+        os.system(f"docker build -t {image_tag} .")
+
+    with open("Dockerfile", "w") as f:
+        with open(docker_sps_path, "r") as src:
+            contents = src.read()
+            f.write(contents)
+
+    os.system(f"docker build -t {image_tag} .")
+    os.system(f"docker tag {image_tag} dgodfrey206/{image_tag}")
+    os.system(f"docker push dgodfrey206/{image_tag}")
+
+
 
 def deploy(argv):
     branch = None
     build = None
     app_only = False
     server_only = False
+    use_firebase = False
 
     global options_path
 
@@ -163,7 +231,8 @@ def deploy(argv):
         "--app-only",
         "--config",
         "--add-volume-mount",
-        "--remove-volume-mount"
+        "--remove-volume-mount",
+        "--firebase"
     ]
 
     reset_version = False
@@ -204,6 +273,8 @@ def deploy(argv):
             reset_version = True
         if opt == "--remove-volume-mount":
             reset_version = True
+        if opt == "--firebase":
+            use_firebase = True
 
     if not os.path.exists(dir_name):
         print(f"error: directory {dir_name} does not exist.")
@@ -233,66 +304,10 @@ def deploy(argv):
 
         os.chdir("LinuxClient")
 
-        # Define the base image
-        base_image = "adamrehn/ue4-runtime:20.04-cudagl11.1.1"
-
-        # Define the Dockerfile contents
-        dockerfile_dep = f"""
-        FROM {base_image}
-
-        USER root
-
-        # Import NVIDIA GPG key
-        RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
-
-        # Update packages
-        RUN apt-get update 
-
-        # Install libsecret
-        RUN apt-get install -y libsecret-1-0
-        """
-
-        dockerfile_sps = f"""
-        FROM {base_image}
-
-        # Copy the packaged project files from the build context
-        COPY --chown=ue4:ue4 . /home/ue4/project
-
-        # Ensure the project's startup script is executable
-        RUN chmod +x "/home/ue4/project/ThirdTurn_TemplateClient.sh"
-
-        # Set the project's startup script as the container's entrypoint
-        ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_TemplateClient.sh"]
-	"""
-
-        # Add dependencies if image tag does not exist
-        client = None
-        try:
-            client = docker.from_env()
-            client.ping()
-        except docker.errors.DockerException:
-            print("error: Docker Desktop is not running.")
-            sys.exit(1)
-
-        client.login(username='dgodfrey206', password='applesauce', registry='https://index.docker.io/v1/')
-
-        if not does_image_tag_exist(client, branch, dir_name):
-            # Write the Dockerfile to a file
-            with open("Dockerfile", "w") as f:
-                with open(docker_dep_path, "r") as src:
-                    contents = src.read()
-                    f.write(contents)
-
-            os.system(f"docker build -t {image_tag} .")
-
-        with open("Dockerfile", "w") as f:
-            with open(docker_sps_path, "r") as src:
-                contents = src.read()
-                f.write(contents)
-
-        os.system(f"docker build -t {image_tag} .")
-        os.system(f"docker tag {image_tag} dgodfrey206/{image_tag}")
-        os.system(f"docker push dgodfrey206/{image_tag}")
+        if use_firebase == False:
+            subprocess.run(f"image-builder create --package . --tag "docker.io/dgodfrey206/{image_tag}")
+        else:
+            build_docker_image(branch, image_tag)
 
         exists, data = try_get_application(branch)
 

@@ -306,7 +306,7 @@ def deploy(argv):
         os.chdir("LinuxClient")
 
         if use_firebase == False:
-            subprocess.run(f"image-builder create --package . --tag "docker.io/dgodfrey206/{image_tag}")
+            subprocess.run(f"image-builder create --package . --tag 'docker.io/dgodfrey206/{image_tag}'")
         else:
             build_docker_image(branch, image_tag)
 

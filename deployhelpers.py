@@ -109,7 +109,7 @@ def show_help():
 -S, --server-only         Only deploy the server\n\
     --add-volume-mount    Add a 100GB storage volume to the application\n\
     --remove-volume-mount Remove the existing storage volume\n\
-    --firebase            Deploys it with the necessary dependencies for firebase
+    --firebase            Deploys it with the necessary dependencies for firebase\n\
     --config              Path to the JSON configuration file\n"
     )
     print("Example: sps-app deploy 22-11-23_build-A-CD --branch dev")

@@ -148,38 +148,6 @@ def print_dots(duration):
         sys.stdout.flush()
 
 def build_docker_image(branch, image_tag):
-    # Define the base image
-    base_image = "adamrehn/ue4-runtime:20.04-cudagl11.1.1"
-
-    # Define the Dockerfile contents
-    dockerfile_dep = f"""
-        FROM {base_image}
-
-        USER root
-
-        # Import NVIDIA GPG key
-        RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
-
-        # Update packages
-        RUN apt-get update 
-
-        # Install libsecret
-        RUN apt-get install -y libsecret-1-0
-        """
-
-    dockerfile_sps = f"""
-        FROM {base_image}
-
-        # Copy the packaged project files from the build context
-        COPY --chown=ue4:ue4 . /home/ue4/project
-
-        # Ensure the project's startup script is executable
-        RUN chmod +x "/home/ue4/project/ThirdTurn_TemplateClient.sh"
-
-        # Set the project's startup script as the container's entrypoint
-        ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_TemplateClient.sh"]
-	"""
-
     # Add dependencies if image tag does not exist
     client = None
     try:

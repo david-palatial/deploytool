@@ -1,1 +1,8 @@
-{}
+{
+	"httpServer": {
+		"enable": false
+	},
+      "turnServer": {
+		"enable": false
+	}
+}

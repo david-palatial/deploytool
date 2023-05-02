@@ -17,7 +17,7 @@ docker_dep_path = os.path.join(os.path.dirname(exe_path), "docker_dep.txt")
 docker_sps_path = os.path.join(os.path.dirname(exe_path), "docker_sps.txt")
 
 def try_get_application(name):
-  command = f"sps-client application info --name {name}"
+  command = f"sps-client application read --name {name}"
   try:
     output = subprocess.check_output(command, shell=True, stderr=subprocess.PIPE)
 
@@ -41,8 +41,9 @@ def switch_active_version(branch, version):
         f"sps-client application update --name {branch} --activeVersion {version}"
     )
 
-def set_new_version(branch, version, resetting=False, path=options_path):
-    container_tag = f"docker.io/dgodfrey206/{branch}:{version}"
+def set_new_version(branch, version, container_tag=None, resetting=False, path=options_path):
+    if container_tag == None:
+      container_tag = f"docker.io/dgodfrey206/{branch}:{version}"
     if resetting == True:
         print("Deleting version...")
         subprocess.run(f"sps-client version delete --name {version} --application {branch}")
@@ -60,28 +61,32 @@ def reset_app_version(branch, path=options_path):
         version = data['response']['activeVersion']['name']
         set_new_version(branch, version, resetting=True, path=path)
 
-def make_new_application(branch, version):
+def make_new_application(branch, version, tag=None):
     sys.stdout.write("Creating application")
     print_dots(25)
     subprocess.run(f"sps-client application create --name {branch}")
-    set_new_version(branch, version)
+    set_new_version(branch, version, container_tag=tag)
 
 def reset_application(branch, image_tag=None):
     exists, data = try_get_application(branch)
-
+    ctag = None
     if exists:
-        activeVersion = data["response"]["activeVersion"]
+        activeVersion = data["response"]["activeVersion"].lower().replace('_', '-')
 
         if image_tag == None:
+            image_tag = f"{branch}:{activeVersion}"
+            ctag = f"docker.io/dgodfrey206/{image_tag}"
             if not activeVersion:
                 print(f"error: app '{branch}' has no set version. can't reset")
                 sys.exit(1)
-            image_tag = f"{branch}:{activeVersion['name']}"
-
-        container_tag = f"docker.io/dgodfrey206/{image_tag}"
+            else:
+                versions = data["response"]["versions"]
+                for v in range(0, len(versions)):
+                    if versions[v]["name"] == activeVersion:
+                        ctag = versions[v]["buildOptions"]["input"]["containerTag"]
+                        break
 
         print(f"Delete {branch}...")
-
         subprocess.run(f"sps-client application delete --name {branch}")
     else:
         print(f"error: app '{branch}' does not exist")
@@ -93,7 +98,7 @@ def reset_application(branch, image_tag=None):
         )
         sys.exit(1)
     version = image_tag.split(':')[1].lower().replace('_', '-')
-    make_new_application(branch, version)
+    make_new_application(branch, version, ctag)
 
     sys.stdout.write("Finishing up")
     print_dots(18)
@@ -190,6 +195,7 @@ def build_docker_image(branch, image_tag):
         registry="https://index.docker.io/v1/",
     )
 
+    dir_name = image_tag.split(':')[1]
     if not does_image_tag_exist(client, branch, dir_name):
         # Write the Dockerfile to a file
         with open("Dockerfile", "w") as f:

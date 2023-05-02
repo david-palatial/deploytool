@@ -112,7 +112,7 @@ def show_help():
 -b, --branch              The application branch to deploy to (dev, demo, prophet, etc.)\n\
 -h, --help                Get help for commands\n\
 -S, --server-only         Only deploy the server\n\
-    --add-volume-mount    Add a 100GB storage volume to the application\n\
+    --add-volume-mount    Add a storage volume to the application\n\
     --remove-volume-mount Remove the existing storage volume\n\
     --firebase            Deploys it with the necessary dependencies for firebase\n\
     --config              Path to the JSON configuration file\n"

@@ -219,7 +219,7 @@ def deploy(argv):
 
     dir_name = os.path.abspath(argv[0])
 
-    for i in range(1, len(argv)):
+    for i in range(0, len(argv)):
         opt = argv[i]
         if opt[0] == "-" and opt not in options:
             print(f"Invalid option {opt}")

@@ -48,12 +48,6 @@ update_options = [
 
 command = sys.argv[1];
 
-for i in range(1, len(sys.argv)):
-  opt = sys.argv[i]
-  if opt == "--help" or opt == "-h" or opt == "help":
-    show_spsApp_help()
-    sys.exit(0)
-
 if command == "deploy":
   # Retrieve values from sys.argv starting from index 3 onward
   values = sys.argv[2:]
@@ -62,9 +56,8 @@ if command == "deploy":
   values_str = ' '.join(values)
 
   deploy(values_str)
-  sys.exit(0)
 
-if command == "reset":
+elif command == "reset":
   if len(sys.argv) < 3:
     show_reset_help()
     sys.exit(1)
@@ -73,8 +66,8 @@ if command == "reset":
   if len(sys.argv) == 5 and (sys.argv[3] == "-t" or sys.argv[3] == "--tag"):
     image_tag = f"{branch}:{sys.argv[4]}"
   reset_application(branch, image_tag)
-  sys.exit(0)
-if command == "update":
+
+elif command == "update":
   if len(sys.argv) < 4:
     show_update_help()
     sys.exit(1)
@@ -106,3 +99,8 @@ if command == "update":
   rest[:] = [elem for elem in rest if elem not in update_options]
   if rest:
     subprocess.run(f"sps-client application update --name {branch} " + " ".join(sys.argv[3:]))
+else:
+  for i in range(1, len(sys.argv)):
+    opt = sys.argv[i]
+    if opt == "--help" or opt == "-h" or opt == "help":
+      show_spsApp_help()

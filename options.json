@@ -1,6 +1,6 @@
 {
 	"httpServer": {
-		"enable": false
+		"enable": true
 	},
 	"turnServer": {
 		"enable": false

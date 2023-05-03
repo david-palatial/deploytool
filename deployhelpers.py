@@ -162,20 +162,31 @@ def build_docker_image(branch, image_tag):
         registry="https://index.docker.io/v1/",
     )
 
-    with open("Dockerfile", "w") as f:
-        with open(docker_dep_path, "r") as src:
-            contents = src.read()
-            f.write(contents)
+    Dockerfile = """
+	FROM adamrehn/ue4-runtime:20.04-cudagl11.1.1
 
-    os.system(f"docker build -t {image_tag} .")
+	USER root
+	RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
+	RUN apt-get update && apt-get -y upgrade
+	RUN apt-get install -y libsecret-1-0
 
-    with open("Dockerfile", "w") as f:
-        with open(docker_sps_path, "r") as src:
-            contents = src.read()
-            f.write(contents)
+        # Copy the packaged project files from the build context
+        COPY --chown=ue4:ue4 LinuxClient /home/ue4/project
 
-    os.system(f"docker build -t {image_tag} .")
-    os.system(f"docker tag {image_tag} dgodfrey206/{image_tag}")
+        # Ensure the project's startup script is executable
+        RUN chmod +x "/home/ue4/project/ThirdTurn_TemplateClient.sh"
+
+	USER ue4
+
+        # Set the project's startup script as the container's entrypoint
+        ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_TemplateClient.sh"]
+    """
+
+    with open("../Dockerfile", "w") as f:
+        f.write(Dockerfile)
+    
+    os.system(f"docker build -t dgodfrey206/{image_tag} ..")
+    #os.system(f"docker tag {image_tag} dgodfrey206/{image_tag}")
     os.system(f"docker push dgodfrey206/{image_tag}")
 
 

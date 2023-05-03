@@ -163,30 +163,31 @@ def build_docker_image(branch, image_tag):
     )
 
     Dockerfile = """
-	FROM adamrehn/ue4-runtime:20.04-cudagl11.1.1
+FROM adamrehn/ue4-runtime:20.04-cudagl11.1.1
 
-	USER root
-	RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
-	RUN apt-get update && apt-get -y upgrade
-	RUN apt-get install -y libsecret-1-0
+# Install our additional packages
+USER root
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
+RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libsecret-1-0
+USER ue4
 
-        # Copy the packaged project files from the build context
-        COPY --chown=ue4:ue4 LinuxClient /home/ue4/project
+# Copy the packaged project files from the build context
+COPY --chown=ue4:ue4 LinuxClient /home/ue4/project
 
-        # Ensure the project's startup script is executable
-        RUN chmod +x "/home/ue4/project/ThirdTurn_TemplateClient.sh"
+# Ensure the project's startup script is executable
+RUN chmod +x "/home/ue4/project/ThirdTurn_TemplateClient.sh"
 
-	USER ue4
-
-        # Set the project's startup script as the container's entrypoint
-        ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_TemplateClient.sh"]
+# Set the project's startup script as the container's entrypoint
+ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_TemplateClient.sh"]
     """
 
     with open("../Dockerfile", "w") as f:
         f.write(Dockerfile)
     
     os.system(f"docker build -t dgodfrey206/{image_tag} ..")
-    #os.system(f"docker tag {image_tag} dgodfrey206/{image_tag}")
     os.system(f"docker push dgodfrey206/{image_tag}")
 
 

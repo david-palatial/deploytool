@@ -17,6 +17,7 @@ deploy        Deploy a new build\n\
 reset         Reset an application\n\
 update        Update options for an application\n\
 delete        Delete an application\n\
+shell         Open a shell to the VM\n\
 reset-server  Reset a dedicated server\n\
 -h, --help    Show help menu\n\n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\
@@ -35,6 +36,10 @@ def show_delete_help():
 usage: sps-app delete <branch>\n\
 -h, --help,     Show help menu\n\n\
 Example: sps-app delete prophet")
+
+def show_shell_help():
+  print("usage: sps-app shell\n\
+Example: sps-app shell")
 
 def show_update_help():
   print("Updates the application's configuration\n\
@@ -71,7 +76,7 @@ def delete_application(branch):
   print(f"Delete {branch}...")
   subprocess.run(f'sps-client application delete --name {branch}')
 
-if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update" and sys.argv[1] != "delete" and sys.argv[1] != "reset-server":
+if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update" and sys.argv[1] != "delete" and sys.argv[1] != "reset-server" and sys.argv[1] != "shell":
   show_spsApp_help()
   sys.exit(1)
 
@@ -144,11 +149,19 @@ elif command == "update":
   if rest:
     subprocess.run(f"sps-client application update --name {branch} " + " ".join(sys.argv[3:]))
 elif command == "reset-server":
-  if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":
+  if len(sys.argv) == 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":
     show_resetServer_help()
-    sys.exit(1)
+    sys.exit(0)
   branch = sys.argv[2]
   reset_server(branch)
+elif command == "shell":
+  if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
+    show_shell_help()
+    sys.exit(0)
+  if len(sys.argv) > 3:
+    show_shell_help()
+    sys.exit(1)
+  subprocess.run('ssh david@prophet.palatialxr.com')
 else:
   for i in range(1, len(sys.argv)):
     opt = sys.argv[i]

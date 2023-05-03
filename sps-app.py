@@ -2,7 +2,7 @@ import sys
 import subprocess
 import os
 import argparse
-from deployhelpers import print_dots, deploy, reset_application, reset_app_version
+from deployhelpers import print_dots, deploy, reset_application, reset_app_version, reset_server
 
 # Get the full path of the executable file
 exe_path = os.path.abspath(__file__)
@@ -13,10 +13,11 @@ persistent_volume_path = os.path.join(os.path.dirname(exe_path), "pvc.json")
 
 def show_spsApp_help():
   print("usage: sps-app [command]\n\
-deploy      Deploys a new build\n\
-reset       Reset an application\n\
-update      Update options for an application\n\
-delete      Deletes an application\n\
+deploy       Deploy a new build\n\
+reset        Reset an application\n\
+update       Update options for an application\n\
+delete       Delete an application\n\
+reset-server Reset a dedicated server\n\
 -h, --help  Show help menu\n\n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\
 Example: sps-app reset demo")
@@ -46,6 +47,11 @@ usage: sps-app update <branch> [options...]\n\
 To see more options, type \"sps-client application update\"\n\
 \n\
 Example: sps-app update prophet overProvisioning.instances \"3\"")
+
+def show_resetServer_help():
+  print("Resets a dedicated server\n\
+usage: sps-app reset-server <branch>\n\
+Example: sps-app reset-server banyan")
 
 def commandExists(opt, options_list):
   if opt in options_list:
@@ -133,6 +139,12 @@ elif command == "update":
   rest[:] = [elem for elem in rest if elem not in update_options]
   if rest:
     subprocess.run(f"sps-client application update --name {branch} " + " ".join(sys.argv[3:]))
+elif command == "reset-server":
+  if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":
+    show_resetServer_help()
+    sys.exit(1)
+  branch = sys.argv[2]
+  reset_server(branch)
 else:
   for i in range(1, len(sys.argv)):
     opt = sys.argv[i]

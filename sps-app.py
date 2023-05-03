@@ -32,7 +32,8 @@ Example: sps-app reset demo --tag 23-04-20_build-A_CD_PalatialTest")
 def show_delete_help():
   print("Deletes the application\n\
 usage: sps-app delete <branch>\n\
--h, --help,     Show help menu")
+-h, --help,     Show help menu\n\n\
+Example: sps-app delete prophet")
 
 def show_update_help():
   print("Updates the application's configuration\n\

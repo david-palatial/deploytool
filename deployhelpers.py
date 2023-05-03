@@ -162,15 +162,12 @@ def build_docker_image(branch, image_tag):
         registry="https://index.docker.io/v1/",
     )
 
-    dir_name = image_tag.split(':')[1]
-    if not does_image_tag_exist(client, branch, dir_name):
-        # Write the Dockerfile to a file
-        with open("Dockerfile", "w") as f:
-            with open(docker_dep_path, "r") as src:
-                contents = src.read()
-                f.write(contents)
+    with open("Dockerfile", "w") as f:
+        with open(docker_dep_path, "r") as src:
+            contents = src.read()
+            f.write(contents)
 
-        os.system(f"docker build -t {image_tag} .")
+    os.system(f"docker build -t {image_tag} .")
 
     with open("Dockerfile", "w") as f:
         with open(docker_sps_path, "r") as src:

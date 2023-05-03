@@ -101,7 +101,7 @@ def reset_application(branch, image_tag=None):
     make_new_application(branch, version, ctag)
 
     sys.stdout.write("Finishing up")
-    print_dots(18)
+    print_dots(6)
     print("FINISHED")
 
 
@@ -280,7 +280,7 @@ def deploy(argv):
         os.chdir("LinuxClient")
 
         if use_firebase == False:
-            subprocess.run(f"image-builder create --package . --tag 'docker.io/dgodfrey206/{image_tag}'")
+            subprocess.run(f'image-builder create --package . --tag "docker.io/dgodfrey206/{image_tag}"')
         else:
             build_docker_image(branch, image_tag)
 
@@ -289,12 +289,12 @@ def deploy(argv):
         version = image_tag.split(":")[1]
 
         # Set a new version if this version doesn't already exist
-        if (exists and reset_version == True):
-            set_new_version(branch, version, resetting=bool(data['response']['activeVersion']), path=os.path.join("..", options_path))
-        elif not exists:
+        if exists:
+            set_new_version(branch, version, rest_version, path=os.path.join("..", options_path))
+        else:
             make_new_application(branch, version)
             sys.stdout.write("Finishing up")
-            print_dots(18)
+            print_dots(6)
         os.chdir("..")
 
     if not app_only:

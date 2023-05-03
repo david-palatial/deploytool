@@ -1,6 +1,7 @@
 import sys
 import subprocess
 import os
+import argparse
 from deployhelpers import print_dots, deploy, reset_application, reset_app_version
 
 # Get the full path of the executable file
@@ -25,6 +26,43 @@ usage: sps-app reset <branch> [options...]\n\
 Example: sps-app reset demo\n\
 Example: sps-app reset demo --tag 23-04-20_build-A_CD_PalatialTest")
 
+def commandExists(opt, options_list):
+  if opt in options_list:
+    return True
+  try:
+    subprocess.run(f'sps-client application update --name example {opt}')
+    return True
+  except subprocess.CalledProcessError as e:
+    return False
+  return False
+
+def populate_JSON_data(branch, opts):
+  parser = argparse.ArgumentParser()
+  for elem in opts:
+    parser.add_argument(elem)
+  print(opts)
+  sys.exit(0)
+  # Parse the arguments and get a dictionary
+  args_dict = vars(parser.parse_args())
+
+  # Create a new dictionary with the parsed arguments
+  data = {}
+  for key, value in args_dict.items():
+      if value is not None:
+          keys = key.split('.')
+          name = keys[0]
+          prop = keys[1]
+          if name not in data:
+              data[name] = {}
+          data[name][prop] = value
+
+  # Convert the dictionary to JSON
+  json_data = json.dumps(data)
+
+  with open('output.json', 'w') as f:
+    f.write(json_data)
+  return data
+
 if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update":
   show_spsApp_help()
   sys.exit(1)
@@ -43,7 +81,8 @@ Example: sps-app update prophet overProvisioning.instances \"3\"")
 update_options = [
   "--add-volume-mount",
   "--remove-volume-mount",
-  "-h", "--help"
+  "-h", "--help",
+  "--activeVersion", 
 ]
 
 command = sys.argv[1];
@@ -61,6 +100,10 @@ elif command == "reset":
   if len(sys.argv) < 3:
     show_reset_help()
     sys.exit(1)
+  for elem in sys.argv[3:]:
+    if elem == "-h" or elem == "--help":
+      show_reset_help()
+      sys.exit(0)
   branch = sys.argv[2]
   image_tag = None
   if len(sys.argv) == 5 and (sys.argv[3] == "-t" or sys.argv[3] == "--tag"):
@@ -68,17 +111,14 @@ elif command == "reset":
   reset_application(branch, image_tag)
 
 elif command == "update":
-  if len(sys.argv) < 4:
+  if len(sys.argv) < 3:
     show_update_help()
     sys.exit(1)
   branch = sys.argv[2]
   added = False
   removed = False
-  for elem in sys.argv[3:]:
-    if elem not in update_options:
-      print(f"error: invalid option {elem}")
-      sys.exit(1)
-  for elem in sys.argv[3:]:
+
+  for elem in sys.argv[2:]:
     if elem == "-h" or elem == "--help":
       show_update_help()
       sys.exit(0)

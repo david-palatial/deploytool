@@ -2,7 +2,7 @@
 	"httpServer": {
 		"enable": false
 	},
-      "turnServer": {
+	"turnServer": {
 		"enable": false
 	}
 }

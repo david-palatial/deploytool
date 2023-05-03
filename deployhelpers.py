@@ -289,7 +289,7 @@ def deploy(argv):
 
         # Set a new version if this version doesn't already exist
         if exists:
-            set_new_version(branch, version, rest_version, path=os.path.join("..", options_path))
+            set_new_version(branch, version, reset_version, path=os.path.join("..", options_path))
         else:
             make_new_application(branch, version)
             sys.stdout.write("Finishing up")

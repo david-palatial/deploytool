@@ -16,6 +16,8 @@ def show_spsApp_help():
 deploy      Deploys a new build\n\
 reset       Reset an application\n\
 update      Update options for an application\n\
+delete      Deletes an application\n\
+-h, --help  Show help menu\n\n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\
 Example: sps-app reset demo")
 
@@ -23,8 +25,26 @@ def show_reset_help():
   print("Resets the client application\n\
 usage: sps-app reset <branch> [options...]\n\
 -t, --tag       The existing application version to reset to\n\
+-h, --help      Show help menu\n\
 Example: sps-app reset demo\n\
 Example: sps-app reset demo --tag 23-04-20_build-A_CD_PalatialTest")
+
+def show_delete_help():
+  print("Deletes the application\n\
+usage: sps-app delete <branch>\n\
+-h, --help,     Show help menu")
+
+def show_update_help():
+  print("Updates the application's configuration\n\
+\n\
+usage: sps-app update <branch> [options...]\n\
+    --add-volume-mount    Adds a storage volume to the application mounted at /home/ue4/\n\
+    --remove-volume-mount Removes the storage volume\n\
+-h, --help                Show help menu\n\
+\n\
+To see more options, type \"sps-client application update\"\n\
+\n\
+Example: sps-app update prophet overProvisioning.instances \"3\"")
 
 def commandExists(opt, options_list):
   if opt in options_list:
@@ -36,47 +56,13 @@ def commandExists(opt, options_list):
     return False
   return False
 
-def populate_JSON_data(branch, opts):
-  parser = argparse.ArgumentParser()
-  for elem in opts:
-    parser.add_argument(elem)
-  print(opts)
-  sys.exit(0)
-  # Parse the arguments and get a dictionary
-  args_dict = vars(parser.parse_args())
+def delete_application(branch):
+  print(f"Delete {branch}...")
+  subprocess.run(f'sps-client application delete --name {branch}')
 
-  # Create a new dictionary with the parsed arguments
-  data = {}
-  for key, value in args_dict.items():
-      if value is not None:
-          keys = key.split('.')
-          name = keys[0]
-          prop = keys[1]
-          if name not in data:
-              data[name] = {}
-          data[name][prop] = value
-
-  # Convert the dictionary to JSON
-  json_data = json.dumps(data)
-
-  with open('output.json', 'w') as f:
-    f.write(json_data)
-  return data
-
-if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update":
+if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update" and sys.argv[1] != "delete":
   show_spsApp_help()
   sys.exit(1)
-
-def show_update_help():
-  print("Updates the application's configuration\n\
-\n\
-usage: sps-app update <branch> [options...]\n\
---add-volume-mount    Adds a storage volume to the application mounted at /home/ue4/\n\
---remove-volume-mount Removes the storage volume\n\
-\n\
-To see more options, type \"sps-client application update\"\n\
-\n\
-Example: sps-app update prophet overProvisioning.instances \"3\"")
 
 update_options = [
   "--add-volume-mount",
@@ -109,6 +95,13 @@ elif command == "reset":
   if len(sys.argv) == 5 and (sys.argv[3] == "-t" or sys.argv[3] == "--tag"):
     image_tag = f"{branch}:{sys.argv[4]}"
   reset_application(branch, image_tag)
+
+elif command == "delete":
+  if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":
+    show_delete_help()
+    sys.exit(0)
+  branch = sys.argv[2]
+  delete_application(branch)
 
 elif command == "update":
   if len(sys.argv) < 3:

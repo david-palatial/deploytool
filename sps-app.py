@@ -2,7 +2,7 @@ import sys
 import subprocess
 import os
 import argparse
-from deployhelpers import print_dots, deploy, reset_application, reset_app_version, reset_server
+from deployhelpers import print_dots, deploy, reset_application, reset_app_version
 
 # Get the full path of the executable file
 exe_path = os.path.abspath(__file__)
@@ -13,12 +13,12 @@ persistent_volume_path = os.path.join(os.path.dirname(exe_path), "pvc.json")
 
 def show_spsApp_help():
   print("usage: sps-app [command]\n\
-deploy       Deploy a new build\n\
-reset        Reset an application\n\
-update       Update options for an application\n\
-delete       Delete an application\n\
-reset-server Reset a dedicated server\n\
--h, --help  Show help menu\n\n\
+deploy        Deploy a new build\n\
+reset         Reset an application\n\
+update        Update options for an application\n\
+delete        Delete an application\n\
+reset-server  Reset a dedicated server\n\
+-h, --help    Show help menu\n\n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\
 Example: sps-app reset demo")
 
@@ -49,9 +49,13 @@ To see more options, type \"sps-client application update\"\n\
 Example: sps-app update prophet overProvisioning.instances \"3\"")
 
 def show_resetServer_help():
-  print("Resets a dedicated server\n\
+  print("Resets a dedicated server\n\n\
 usage: sps-app reset-server <branch>\n\
+-h, --help      Show help menu\n\n\
 Example: sps-app reset-server banyan")
+
+def reset_server(branch):
+  subprocess.run(f'ssh david@prophet.palatialxr.com "sudo systemctl restart server_{branch}"')
 
 def commandExists(opt, options_list):
   if opt in options_list:
@@ -67,7 +71,7 @@ def delete_application(branch):
   print(f"Delete {branch}...")
   subprocess.run(f'sps-client application delete --name {branch}')
 
-if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update" and sys.argv[1] != "delete":
+if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update" and sys.argv[1] != "delete" and sys.argv[1] != "reset-server":
   show_spsApp_help()
   sys.exit(1)
 

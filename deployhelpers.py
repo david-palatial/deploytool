@@ -104,18 +104,6 @@ def reset_application(branch, image_tag=None):
     print_dots(6)
     print("FINISHED")
 
-def reset_server(branch):
-  subprocess.run(
-    f'ssh david@prophet.palatialxr.com "sudo systemctl stop server_{branch}.service"'
-  )
-  subprocess.check_output(
-    "scp -r LinuxServer david@prophet.palatialxr.com:~/servers/" + branch
-  )
-  subprocess.run(
-     f'ssh david@prophet.palatialxr.com "sudo systemctl start server_{branch}.service"'
-  )
-
-
 def show_help():
     print(
         "usage: sps-app deploy <dir> [-b or --branch] <branch> [options...]\n\
@@ -314,7 +302,15 @@ def deploy(argv):
             print("error: file LinuxServer does not exist in {}".format(os.path.abspath(os.getcwd())))
             sys.exit(1)
 
-        reset_server(branch, dir_name)
+        subprocess.run(
+          f'ssh david@prophet.palatialxr.com "sudo systemctl stop server_{branch}.service"'
+        )
+        subprocess.check_output(
+          "scp -r LinuxServer david@prophet.palatialxr.com:~/servers/" + branch
+        )
+        subprocess.run(
+          f'ssh david@prophet.palatialxr.com "sudo systemctl start server_{branch}.service"'
+        )
         subprocess.run(
           f'ssh david@prophet.palatialxr.com "echo "{dir_name}" >> ~/servers/{branch}/version.log"'
         )

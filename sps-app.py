@@ -87,7 +87,7 @@ elif command == "reset":
   if len(sys.argv) < 3:
     show_reset_help()
     sys.exit(1)
-  for elem in sys.argv[3:]:
+  for elem in sys.argv[2:]:
     if elem == "-h" or elem == "--help":
       show_reset_help()
       sys.exit(0)

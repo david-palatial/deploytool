@@ -58,7 +58,7 @@ def reset_app_version(branch, path=options_path):
     exists, data = try_get_application(branch)
     if exists:
       if data['response']['activeVersion']:
-        version = data['response']['activeVersion']['name']
+        version = data['response']['activeVersion']
         set_new_version(branch, version, resetting=True, path=path)
 
 def make_new_application(branch, version, tag=None):

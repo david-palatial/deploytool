@@ -6,6 +6,8 @@ import queue
 import threading
 import docker
 import json
+import random
+import string
 
 # Get the full path of the executable file
 exe_path = os.path.abspath(__file__)
@@ -15,6 +17,23 @@ options_path = os.path.join(os.path.dirname(exe_path), "options.json")
 persistent_volume_path = os.path.join(os.path.dirname(exe_path), "pvc.json")
 docker_dep_path = os.path.join(os.path.dirname(exe_path), "docker_dep.txt")
 docker_sps_path = os.path.join(os.path.dirname(exe_path), "docker_sps.txt")
+
+def generate_random_string():
+    # define the valid characters
+    valid_chars = string.ascii_lowercase + string.digits
+
+    # generate the first character
+    random_string = random.choice(string.ascii_lowercase + string.digits)
+
+    # generate the rest of the characters
+    for i in range(32):
+        random_string += random.choice(valid_chars)
+
+    # make sure the last character is alphanumeric
+    while not random_string[-1].isalnum():
+        random_string = random_string[:-1] + random.choice(string.ascii_lowercase + string.digits)
+
+    return random_string
 
 def try_get_application(name):
   command = f"sps-client application read --name {name}"
@@ -118,14 +137,6 @@ def show_help():
     )
     print("Example: sps-app deploy 22-11-23_build-A-CD --branch dev")
 
-
-def print_periodic(interval):
-    while True:
-        sys.stdout.write(". ")
-        sys.stdout.flush()
-        time.sleep(interval)
-
-
 def print_dots(duration):
     q = queue.Queue()
 
@@ -148,6 +159,7 @@ def print_dots(duration):
 
 def build_docker_image(branch, image_tag):
     # Add dependencies if image tag does not exist
+
     client = None
     try:
         client = docker.from_env()
@@ -175,7 +187,7 @@ RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/
 USER ue4
 
 # Copy the packaged project files from the build context
-COPY --chown=ue4:ue4 LinuxClient /home/ue4/project
+COPY --chown=ue4:ue4 ./LinuxClient /home/ue4/project
 
 # Ensure the project's startup script is executable
 RUN chmod +x "/home/ue4/project/ThirdTurn_TemplateClient.sh"
@@ -278,7 +290,7 @@ def deploy(argv):
 
     os.chdir(dir_name)
     dir_name = os.path.basename(dir_name).lower().replace('_', '-')
-    image_tag = f"{branch}:{dir_name}"
+    image_tag = f"{branch}:{generate_random_string()}"
 
     if not server_only:
         if not os.path.exists(os.path.join(os.getcwd(), "LinuxClient")):
@@ -293,11 +305,11 @@ def deploy(argv):
             build_docker_image(branch, image_tag)
 
         exists, data = try_get_application(branch)
-
-        version = image_tag.split(":")[1]
+        version = image_tag.split(':')[1]
 
         # Set a new version if this version doesn't already exist
         if exists:
+            d = data['response']
             set_new_version(branch, version, resetting=reset_version, path=os.path.join("..", options_path))
         else:
             make_new_application(branch, version)

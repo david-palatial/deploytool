@@ -149,7 +149,10 @@ elif command == "update":
   if rest:
     subprocess.run(f"sps-client application update --name {branch} " + " ".join(sys.argv[3:]))
 elif command == "reset-server":
-  if len(sys.argv) == 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":
+  if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
+    show_resetServer_help()
+    sys.exit(0)
+  if len(sys.argv) < 3 or len(sys.argv) > 3:
     show_resetServer_help()
     sys.exit(0)
   branch = sys.argv[2]

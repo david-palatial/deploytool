@@ -127,6 +127,7 @@ def show_help():
     print(
         "usage: sps-app deploy <dir> [-b or --branch] <branch> [options...]\n\
 -A, --app-only            Only deploy the client\n\
+-C, --client-only         Only deploy the client\n\
 -b, --branch              The application branch to deploy to (dev, demo, prophet, etc.)\n\
 -h, --help                Get help for commands\n\
 -S, --server-only         Only deploy the server\n\
@@ -222,8 +223,10 @@ def deploy(argv):
         "-h",
         "--help",
         "-S",
+        "-C",
         "--server-only",
         "--app-only",
+        "--client-only",
         "--config",
         "--add-volume-mount",
         "--remove-volume-mount",
@@ -253,7 +256,7 @@ def deploy(argv):
                 print("error: --branch provided without an argument")
                 sys.exit(1)
             branch = argv[i + 1]
-        if opt == "-A" or opt == "--app-only":
+        if opt == "-A" or opt == "--app-only" or opt == "-C" or opt == "--client-only":
             app_only = True
         if opt == "-S" or opt == "--server-only":
             server_only = True

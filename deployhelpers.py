@@ -308,8 +308,8 @@ def deploy(argv):
         if use_firebase == False:
             subprocess.run(f'image-builder create --package . --tag "docker.io/dgodfrey206/{image_tag}"')
         else:
-            build_docker_image(branch, image_tag)
             image_tag = f"{branch}:{generate_random_string()}"
+            build_docker_image(branch, image_tag)
 
         exists, data = try_get_application(branch)
         version = image_tag.split(':')[1]

@@ -18,6 +18,7 @@ reset           Reset an application\n\
 update          Update options for an application\n\
 delete          Delete an application\n\
 shell           Open a shell to the VM\n\
+config          Set the SPS server\n\
 restart-server  Restarts a dedicated server\n\
 -h, --help    Show help menu\n\n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\
@@ -40,6 +41,13 @@ Example: sps-app delete prophet")
 def show_shell_help():
   print("usage: sps-app shell\n\
 Example: sps-app shell")
+
+def show_config_help():
+  print("usage: sps-app config [command]\n\
+update   Change the credentials for the current SPS server\n\
+   -p, --key, --access-key, --password    The API key for the new server\n\
+\n\
+Example: sps-app config update --access-key R6bT9sG2nK5hF8w")
 
 def show_update_help():
   print("Updates the application's configuration\n\
@@ -75,7 +83,7 @@ def delete_application(branch):
   print(f"Delete {branch}...")
   subprocess.run(f'sps-client application delete --name {branch}')
 
-if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update" and sys.argv[1] != "delete" and sys.argv[1] != "restart-server" and sys.argv[1] != "shell":
+if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update" and sys.argv[1] != "delete" and sys.argv[1] != "restart-server" and sys.argv[1] != "shell" and sys.argv[1] != "config":
   show_spsApp_help()
   sys.exit(1)
 
@@ -164,6 +172,22 @@ elif command == "shell":
     show_shell_help()
     sys.exit(1)
   subprocess.run('ssh david@prophet.palatialxr.com')
+elif command == "config":
+  if len(sys.argv) < 3 or (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
+    show_config_help()
+    sys.exit(0)
+
+  if sys.argv[2] == "update":
+    if len(sys.argv) != 5:
+      show_config_help()
+      sys.exit(0)
+    if sys.argv[3] == "--password" or sys.argv[3] == "-p" or sys.argv[3] == "--access-key" or sys.argv[3] == "--key":
+      subprocess.run("sps-client config delete --name palatial-sps")
+      subprocess.run("sps-client config add --name palatial-sps-server --address \"https://api.tenant-palatial-platform.lga1.ingress.coreweave.cloud\" --access-key " + sys.argv[4])
+      subprocess.run("sps-client config set-default --name palatial-sps-server")
+    else:
+      show_config_help()
+      sys.exit(0)
 else:
   for i in range(1, len(sys.argv)):
     opt = sys.argv[i]

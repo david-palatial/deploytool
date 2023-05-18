@@ -182,7 +182,7 @@ FROM adamrehn/ue4-runtime:20.04-cudagl11.1.1
 USER root
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
 RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt \
-    apt-get update && \
+    apt-get update && apt-get -y upgrade && \
     apt-get install -y --no-install-recommends \
         libsecret-1-0
 USER ue4
@@ -192,6 +192,9 @@ COPY --chown=ue4:ue4 ./LinuxClient /home/ue4/project
 
 # Ensure the project's startup script is executable
 RUN chmod +x "/home/ue4/project/ThirdTurn_TemplateClient.sh"
+
+RUN ln -s /usr/lib/x86_64-linux-gnu/libsecret-1.so.0 /home/ue4/project/Palatial_V01_UE51/Binaries/Linux/libsecret-1.so.0
+RUN ls -al /home/ue4/project/
 
 # Set the project's startup script as the container's entrypoint
 ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_TemplateClient.sh"]
@@ -293,7 +296,7 @@ def deploy(argv):
 
     os.chdir(dir_name)
     dir_name = os.path.basename(dir_name).lower().replace('_', '-')
-    image_tag = f"{branch}:{generate_random_string()}"
+    image_tag = f"{branch}:{dir_name}"
 
     if not server_only:
         if not os.path.exists(os.path.join(os.getcwd(), "LinuxClient")):
@@ -306,6 +309,7 @@ def deploy(argv):
             subprocess.run(f'image-builder create --package . --tag "docker.io/dgodfrey206/{image_tag}"')
         else:
             build_docker_image(branch, image_tag)
+            image_tag = f"{branch}:{generate_random_string()}"
 
         exists, data = try_get_application(branch)
         version = image_tag.split(':')[1]
@@ -336,7 +340,7 @@ def deploy(argv):
           f'ssh david@prophet.palatialxr.com "sudo systemctl start server_{branch}.service"'
         )
         subprocess.run(
-          f'ssh david@prophet.palatialxr.com "echo "{dir_name}" >> ~/servers/{branch}/version.log"'
+          f'ssh david@prophet.palatialxr.com "echo "{dir_name}" > ~/servers/{branch}/version.log"'
         )
 
     print("FINISHED")

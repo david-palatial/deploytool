@@ -132,7 +132,6 @@ def show_help():
 -h, --help                Get help for commands\n\
 -S, --server-only         Only deploy the server\n\
     --add-volume-mount    Add a storage volume to the application\n\
-    --remove-volume-mount Remove the existing storage volume\n\
     --firebase            Deploys it with the necessary dependencies for firebase\n\
     --config              Path to the JSON configuration file\n"
     )
@@ -232,7 +231,6 @@ def deploy(argv):
         "--client-only",
         "--config",
         "--add-volume-mount",
-        "--remove-volume-mount",
         "--firebase"
     ]
 
@@ -271,8 +269,6 @@ def deploy(argv):
             reset_version = True
         if opt == "--add-volume-mount":
             options_path = persistent_volume_path
-            reset_version = True
-        if opt == "--remove-volume-mount":
             reset_version = True
         if opt == "--firebase":
             use_firebase = True

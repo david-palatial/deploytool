@@ -182,7 +182,7 @@ elif command == "config":
       show_config_help()
       sys.exit(0)
     if sys.argv[3] == "--password" or sys.argv[3] == "-p" or sys.argv[3] == "--access-key" or sys.argv[3] == "--key":
-      subprocess.run("sps-client config delete --name palatial-sps")
+      subprocess.run("sps-client config delete --name palatial-sps-server")
       subprocess.run("sps-client config add --name palatial-sps-server --address \"https://api.tenant-palatial-platform.lga1.ingress.coreweave.cloud\" --access-key " + sys.argv[4])
       subprocess.run("sps-client config set-default --name palatial-sps-server")
     else:

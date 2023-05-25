@@ -68,6 +68,10 @@ def set_new_version(branch, version, container_tag=None, resetting=False, path=o
         subprocess.run(f"sps-client version delete --name {version} --application {branch}")
     print("Creating new version...")
     subprocess.check_output("timeout 2")
+    print(path)
+    with open(path, "r") as f:
+        for line in f:
+            print(line, end='')
     subprocess.run(
         ['sps-client', 'version', 'create', '--application', branch, '--name', version, '--buildOptions.input.containerTag', container_tag, '--buildOptions.credentials.registry', "https://index.docker.io/v1/", '-f', path ]
     )

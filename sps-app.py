@@ -45,9 +45,12 @@ Example: sps-app shell")
 def show_config_help():
   print("usage: sps-app config [command]\n\
 update   Change the credentials for the current SPS server\n\
-   -p, --key, --access-key, --password    The API key for the new server\n\
+   -p, --key, --access-key, --password    The API key for the SPS server\n\
+get-key  Get the API key for the SPS server\n\
 \n\
-Example: sps-app config update --access-key R6bT9sG2nK5hF8w")
+Example: sps-app config update --access-key ez2UroRWSJpEkahedev80neMGOGrDo6U\n\
+Example: sps-app config get-key\n\
+output: ez2UroRWSJpEkahedev80neMGOGrDo6U")
 
 def show_update_help():
   print("Updates the application's configuration\n\
@@ -185,9 +188,23 @@ elif command == "config":
       subprocess.run("sps-client config delete --name palatial-sps-server")
       subprocess.run("sps-client config add --name palatial-sps-server --address \"https://api.tenant-palatial-platform.lga1.ingress.coreweave.cloud\" --access-key " + sys.argv[4])
       subprocess.run("sps-client config set-default --name palatial-sps-server")
-    else:
-      show_config_help()
-      sys.exit(0)
+  elif sys.argv[2] == "get-key":
+    ps_code = r'''
+    $base64 = (kubectl get secrets/sps-api-access-key --template='{{.data.restapiaccesskey}}')
+    [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($base64))
+    '''
+
+    # Execute PowerShell code using subprocess
+    result = subprocess.run(['powershell', '-Command', ps_code], capture_output=True, text=True)
+
+    # Check the result
+    if result.returncode == 0:
+      # PowerShell command executed successfully
+      output = result.stdout.strip()
+      print(output)
+  else:
+    show_config_help()
+    sys.exit(0)
 else:
   for i in range(1, len(sys.argv)):
     opt = sys.argv[i]

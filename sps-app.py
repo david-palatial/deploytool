@@ -67,7 +67,7 @@ usage: sps-app update <branch> [options...]\n\
     --remove-volume-mount Removes the storage volume\n\
 -h, --help                Show help menu\n\
 \n\
-To see more options, type \"sps-client application update\"\n\
+To see more options, run \"sps-client application update -h\"\n\
 \n\
 Example: sps-app update prophet --overProvisioning.instances 3")
 

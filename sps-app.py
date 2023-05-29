@@ -21,7 +21,7 @@ delete          Delete an application\n\
 shell           Open a shell to the VM\n\
 config          Set the SPS server\n\
 restart-server  Restarts a dedicated server\n\
--h, --help    Show help menu\n\n\
+-h, --help      Show help menu\n\n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\
 Example: sps-app reset demo")
 

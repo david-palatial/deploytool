@@ -69,7 +69,7 @@ usage: sps-app update <branch> [options...]\n\
 \n\
 To see more options, type \"sps-client application update\"\n\
 \n\
-Example: sps-app update prophet overProvisioning.instances \"3\"")
+Example: sps-app update prophet --overProvisioning.instances \"3\"")
 
 def show_resetServer_help():
   print("usage: sps-app restart-server <branch>\n\

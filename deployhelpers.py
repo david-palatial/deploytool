@@ -282,11 +282,11 @@ def deploy(argv):
         sys.exit(1)
 
     if app_only and not os.path.exists(os.path.join(dir_name, "LinuxClient")):
-        print("error: file LinuxClient does not exist in {}".format(dir_name))
+        print(f"error: directory LinuxClient does not exist in {dir_name}")
         sys.exit(1)
 
     if server_only and not os.path.exists(os.path.join(dir_name, "LinuxServer")):
-        print("error: file LinuxServer does not exist in {}".format(dir_name))
+        print(f"error: directory LinuxServer does not exist in {dir_name}")
         sys.exit(1)
 
     if branch == None:
@@ -300,7 +300,7 @@ def deploy(argv):
 
     if not server_only:
         if not os.path.exists(os.path.join(os.getcwd(), "LinuxClient")):
-            print("error: file LinuxClient does not exist in {}".format(os.path.abspath(os.getcwd())))
+            print(f"error: directory LinuxClient does not exist in {os.path.abspath(os.getcwd())}")
             sys.exit(1)
 
         os.chdir("LinuxClient")
@@ -327,7 +327,7 @@ def deploy(argv):
     if not app_only:
         print("Uploading server...")
         if not os.path.exists(os.path.join(os.getcwd(), "LinuxServer")):
-            print("error: file LinuxServer does not exist in {}".format(os.path.abspath(os.getcwd())))
+            print(f"error: directory LinuxServer does not exist in {os.path.abspath(os.getcwd())}")
             sys.exit(1)
 
         subprocess.run(

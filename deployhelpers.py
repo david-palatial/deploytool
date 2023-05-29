@@ -135,8 +135,8 @@ def show_help():
 -b, --branch                       The application branch to deploy to (dev, demo, prophet, etc.)\n\
     --add-volume-mount             Add a storage volume to the application\n\
     --firebase                     Deploys it with the necessary dependencies for firebase\n\
-    --config                       Path to the JSON configuration file\n"
--h, --help                         Get help for commands\n\
+    --config                       Path to the JSON configuration file\n\
+-h, --help                         Get help for commands\n\"
     )
     print("Example: sps-app deploy 22-11-23_build-A-CD --branch dev")
 

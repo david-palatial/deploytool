@@ -16,6 +16,7 @@ def show_spsApp_help():
 deploy          Deploy a new build\n\
 reset           Reset an application\n\
 update          Update options for an application\n\
+create          Creates an application\n\
 delete          Delete an application\n\
 shell           Open a shell to the VM\n\
 config          Set the SPS server\n\
@@ -37,6 +38,12 @@ def show_delete_help():
 usage: sps-app delete <branch>\n\
 -h, --help,     Show help menu\n\n\
 Example: sps-app delete prophet")
+
+def show_create_help():
+  print("Creates an application\n\
+usage: sps-app create <branch>\n\
+-h, --help,     Show help menu\n\n\
+Example: sps-app create prophet")
 
 def show_shell_help():
   print("usage: sps-app shell\n\
@@ -86,7 +93,7 @@ def delete_application(branch):
   print(f"Delete {branch}...")
   subprocess.run(f'sps-client application delete --name {branch}')
 
-if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update" and sys.argv[1] != "delete" and sys.argv[1] != "restart-server" and sys.argv[1] != "shell" and sys.argv[1] != "config":
+if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update" and sys.argv[1] != "delete" and sys.argv[1] != "create" and sys.argv[1] != "restart-server" and sys.argv[1] != "shell" and sys.argv[1] != "config":
   show_spsApp_help()
   sys.exit(1)
 
@@ -128,6 +135,13 @@ elif command == "delete":
     sys.exit(0)
   branch = sys.argv[2]
   delete_application(branch)
+
+elif command == "create":
+  if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":
+    show_create_help()
+    sys.exit(0)
+  branch = sys.argv[2]
+  subprocess.run(f'sps-client application create --name {branch}')
 
 elif command == "update":
   if len(sys.argv) < 3:

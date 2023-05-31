@@ -2,6 +2,7 @@ import sys
 import subprocess
 import os
 import argparse
+import json
 from deployhelpers import print_dots, deploy, reset_application, reset_app_version
 
 # Get the full path of the executable file
@@ -10,6 +11,29 @@ exe_path = os.path.abspath(__file__)
 # Construct the full path of the "options.json" file
 options_path = os.path.join(os.path.dirname(exe_path), "options.json")
 persistent_volume_path = os.path.join(os.path.dirname(exe_path), "pvc.json")
+
+def parse_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('args', nargs=argparse.REMAINDER)
+    return parser.parse_args()
+
+def create_json_file(args):
+    data = {}
+    for arg in args:
+        if '=' in arg:
+            key, value = arg.split('=')
+        else:
+            key = arg
+            value = True
+        keys = key.split('.')
+        current = data
+        for k in keys[:-1]:
+            if k not in current:
+                current[k] = {}
+            current = current[k]
+        current[keys[-1]] = value
+    with open(options_path, 'w') as file:
+        json.dump(data, file, indent=4)
 
 def show_spsApp_help():
   print("usage: sps-app [command]\n\
@@ -155,6 +179,7 @@ elif command == "update":
     if elem == "-h" or elem == "--help":
       show_update_help()
       sys.exit(0)
+
   for elem in sys.argv[3:]:
     if elem == "--add-volume-mount":
       if removed:
@@ -168,10 +193,14 @@ elif command == "update":
         sys.exit(1)
       reset_app_version(branch)
       removed = True
+
+  args = parse_arguments().args
+  create_json_file(args[3:])
+
   rest = sys.argv[3:]
-  rest[:] = [elem for elem in rest if elem not in update_options]
-  if rest:
-    subprocess.run(f"sps-client application update --name {branch} " + " ".join(sys.argv[3:]))
+  rest_in_sps_client[:] = [elem for elem in rest if elem not in update_options]
+  if rest_not_in_options:
+    subprocess.run(f"sps-client application update --name {branch} " + " ".join(rest_not_in_options))
 elif command == "restart-server":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     show_resetServer_help()

@@ -26,7 +26,7 @@ def generate_random_string():
     random_string = random.choice(string.ascii_lowercase + string.digits)
 
     # generate the rest of the characters
-    for i in range(32):
+    for i in range(7):
         random_string += random.choice(valid_chars)
 
     # make sure the last character is alphanumeric
@@ -304,7 +304,7 @@ def deploy(argv):
         if use_firebase == False:
             subprocess.run(f'image-builder create --package . --tag "docker.io/dgodfrey206/{image_tag}"')
         else:
-            image_tag = f"{branch}:{generate_random_string()}"
+            image_tag = f"{branch}:{generate_random_string() + dir_name[8:]}"
             build_docker_image(branch, image_tag)
 
         exists, data = try_get_application(branch)
@@ -330,7 +330,7 @@ def deploy(argv):
           f'ssh david@prophet.palatialxr.com "sudo systemctl stop server_{branch}.service"'
         )
         subprocess.check_output(
-          "scp -r LinuxServer david@prophet.palatialxr.com:~/servers/" + branch
+          'scp -r LinuxServer david@prophet.palatialxr.com:~/servers/' + branch
         )
         subprocess.run(
           f'ssh david@prophet.palatialxr.com "sudo systemctl start server_{branch}.service"'

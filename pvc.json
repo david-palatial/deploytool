@@ -1,9 +1,0 @@
-{
-  "runtimeOptions":{
-    "volumeMounts": [{
-      "name": "persistent-volume",
-	"mountPath": "/home/ue4/pvc",
-	"readOnly": false
-    }]
-  }
-}

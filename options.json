@@ -1,0 +1,15 @@
+{
+	"httpServer": {
+		"enable": false
+	},
+	"turnServer": {
+		"enable": false
+	},
+	"signallingServer": {
+		"builtinPlugins": {
+			"authentication": {
+				"replicas": 1
+			}
+		}
+	}
+}

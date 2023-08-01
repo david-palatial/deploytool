@@ -1,4 +1,5 @@
 import subprocess
+import json
 import re
 
 def file_exists_on_remote(host, remote_file_path):

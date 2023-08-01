@@ -8,7 +8,7 @@ import shutil
 import paramiko
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
-impoty misc
+import misc
 
 from help_menus import *
 from deployhelpers import print_dots, deploy, reset_application, reset_app_version, set_new_version

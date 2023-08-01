@@ -62,4 +62,5 @@ def try_get_application(name):
 
     return True, data
   except subprocess.CalledProcessError as e:
+    print(e)
     return False, None

@@ -115,7 +115,7 @@ def reset_application(branch, image_tag=None):
 
     if image_tag == None:
         print(
-            f"error: app '{branch}' does not exist. deploy a new build or provide an existing version to reset to (i.e sps-app reset {branch} --tag 23-03-14_build-A_CD_RelatedBanyan)"
+            f"error: app '{branch}' does not exist. deploy a new build or provide an existing image tag to reset to (i.e sps-app reset {branch} --tag 23-03-14_build-A_CD_RelatedBanyan)"
         )
         sys.exit(1)
     version = image_tag.split(':')[1].lower().replace('_', '-')

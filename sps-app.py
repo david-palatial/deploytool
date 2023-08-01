@@ -163,7 +163,8 @@ elif command == "reset" or command == "restart":
   image_tag = None
   if len(sys.argv) == 5 and (sys.argv[3] == "-t" or sys.argv[3] == "--tag"):
     tag = sys.argv[4]
-    image_tag = f"{branch}:{tag}"
+    if not tag_has_repo(tag):
+      image_tag = f"{branch}:{tag}"
   reset_application(branch, image_tag)
 
 elif command == "delete":
@@ -182,7 +183,7 @@ elif command == "create":
   exists, data = misc.try_get_application(branch)
   if not exists:
     subprocess.run(f'sps-client application create --name {branch}')
-  if "activeVersion" in data:
+  if data["response"]["activeVersion"]:
     print(f"error: {branch} already exists with an active version")
     sys.exit(1)
   if len(sys.argv) > 3 and (sys.argv[3] == "--tag" or sys.argv[3] == "-t"):

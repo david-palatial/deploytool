@@ -161,7 +161,8 @@ elif command == "reset" or command == "restart":
   branch = sys.argv[2]
   image_tag = None
   if len(sys.argv) == 5 and (sys.argv[3] == "-t" or sys.argv[3] == "--tag"):
-    image_tag = f"{branch}:{sys.argv[4]}"
+    tag = sys.argv[4].lower().replace('_', '-').replace('.', '-')
+    image_tag = f"{branch}:{tag}"
   reset_application(branch, image_tag)
 
 elif command == "delete":

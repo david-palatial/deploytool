@@ -104,6 +104,8 @@ def reset_application(branch, image_tag=None):
     exists, data = try_get_application(branch)
     ctag = None
     if exists:
+        print(data["response"])
+        sys.exit(0)
         activeVersion = data["response"]["activeVersion"].lower().replace('_', '-')
 
         if image_tag == None:

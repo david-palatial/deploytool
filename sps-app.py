@@ -182,6 +182,9 @@ elif command == "create":
   exist, data = misc.try_get_application(branch)
   if not exists:
     subprocess.run(f'sps-client application create --name {branch}')
+  if data["activeVersion"]:
+    print(f"error: {branch} already exists with an active version")
+    sys.exit(1)
   if len(sys.argv) > 3 and (sys.argv[3] == "--tag" or sys.argv[3] == "-t"):
     if len(sys.argv) != 5:
       print(f"error: {sys.argv[3]} requires an argument")

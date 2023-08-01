@@ -179,7 +179,7 @@ elif command == "create":
     show_create_help()
     sys.exit(0)
   branch = sys.argv[2]
-  exist, data = misc.try_get_application(branch)
+  exists, data = misc.try_get_application(branch)
   if not exists:
     subprocess.run(f'sps-client application create --name {branch}')
   if data["activeVersion"]:

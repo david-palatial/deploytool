@@ -8,6 +8,7 @@ import shutil
 import paramiko
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
+impoty misc
 
 from help_menus import *
 from deployhelpers import print_dots, deploy, reset_application, reset_app_version, set_new_version
@@ -161,7 +162,7 @@ elif command == "reset" or command == "restart":
   branch = sys.argv[2]
   image_tag = None
   if len(sys.argv) == 5 and (sys.argv[3] == "-t" or sys.argv[3] == "--tag"):
-    tag = sys.argv[4].lower().replace('_', '-').replace('.', '-')
+    tag = sys.argv[4]
     image_tag = f"{branch}:{tag}"
   reset_application(branch, image_tag)
 
@@ -178,7 +179,9 @@ elif command == "create":
     show_create_help()
     sys.exit(0)
   branch = sys.argv[2]
-  subprocess.run(f'sps-client application create --name {branch}')
+  exist, data = misc.try_get_application(branch)
+  if not exists:
+    subprocess.run(f'sps-client application create --name {branch}')
   if len(sys.argv) > 3 and (sys.argv[3] == "--tag" or sys.argv[3] == "-t"):
     if len(sys.argv) != 5:
       print(f"error: {sys.argv[3]} requires an argument")

@@ -51,3 +51,14 @@ def increment_version(version_string):
     else:
         # If the input string doesn't match the pattern, return version_string
         return version_string
+
+def try_get_application(name):
+  command = f"sps-client application read --name {name}"
+  try:
+    output = subprocess.check_output(command, shell=True, stderr=subprocess.PIPE)
+
+    data = json.loads(output.decode())
+
+    return True, data
+  except subprocess.CalledProcessError as e:
+    return False, None

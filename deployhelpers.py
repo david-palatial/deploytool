@@ -45,17 +45,6 @@ def new_string_format(str):
 def make_application_name(dir_name):
   return transform_string(dir_name)
 
-def try_get_application(name):
-  command = f"sps-client application read --name {name}"
-  try:
-    output = subprocess.check_output(command, shell=True, stderr=subprocess.PIPE)
-
-    data = json.loads(output.decode())
-
-    return True, data
-  except subprocess.CalledProcessError as e:
-    return False, None
-
 def does_image_tag_exist(client, image, tag):
     try:
         client.images.get(f"{image}:{tag}")
@@ -85,7 +74,7 @@ def set_new_version(branch, version, container_tag=None, resetting=False, path=o
     switch_active_version(branch, version)
 
 def reset_app_version(branch, path=options_path):
-    exists, data = try_get_application(branch)
+    exists, data = misc.try_get_application(branch)
     if exists:
       if data['response']['activeVersion']:
         version = data['response']['activeVersion']
@@ -101,11 +90,10 @@ def make_new_application(branch, version, tag=None, wait=True):
     set_new_version(branch, version, container_tag=tag)
 
 def reset_application(branch, image_tag=None):
-    exists, data = try_get_application(branch)
+    exists, data = misc.try_get_application(branch)
     ctag = None
     if exists:
-        activeVersion = data["response"]["activeVersion"].lower().replace('_', '-')
-        print("hello")
+        activeVersion = data["response"]["activeVersion"].lower().replace('_', '-').replace('.', '-')
         if image_tag == None:
             image_tag = f"{branch}:{activeVersion}"
             ctag = f"docker.io/dgodfrey206/{image_tag}"
@@ -374,7 +362,7 @@ def deploy(argv):
         elif os.path.exists(os.path.join(os.getcwd(), "LinuxClient")):
           os.chdir("LinuxClient")
 
-        exists, data = try_get_application(branch)
+        exists, data = misc.try_get_application(branch)
         if exists:
           d = data['response']
           if not self_selected_version:

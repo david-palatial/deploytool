@@ -21,8 +21,6 @@ options_path = os.path.join(os.path.dirname(exe_path), "options.json")
 persistent_volume_path = os.path.join(os.path.dirname(exe_path), "pvc.json")
 config_file = os.path.join(os.path.dirname(exe_path), "dist", "config")
 
-ssh = 'ssh david@new-0878.tenant-palatial-platform.coreweave.cloud'
-
 def copy_config_to_kube():
   # Check if the config file exists
   if os.path.isfile(config_file):
@@ -174,7 +172,7 @@ elif command == "delete":
     sys.exit(0)
   branch = sys.argv[2]
   delete_application(branch)
-  subprocess.run(f'{ssh} ./deployment/cleanup.sh {branch}', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run(f'ssh {misc.host} ./deployment/cleanup.sh {branch}', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 elif command == "create":
   if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":
@@ -245,7 +243,7 @@ elif command == "shell":
   if len(sys.argv) > 3:
     help_menus.show_shell_help()
     sys.exit(1)
-  subprocess.run('ssh david@new-0878.tenant-palatial-platform.coreweave.cloud')
+  subprocess.run('ssh {misc.host}')
 elif command == "config":
   if len(sys.argv) < 3 or (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_config_help()

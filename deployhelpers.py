@@ -383,7 +383,7 @@ def deploy(argv):
         image_tag = f"{branch}:{version}"
 
         if use_firebase:
-            pass #build_docker_image(branch, image_tag)
+            build_docker_image(branch, image_tag)
         else:
             subprocess.run(f'image-builder create --package . --tag "docker.io/dgodfrey206/{image_tag}"')
 
@@ -446,7 +446,7 @@ def deploy(argv):
         else:
           subprocess.run(f'ssh {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE)
 
-        #subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', stdout=subprocess.PIPE)
+        subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', stdout=subprocess.PIPE)
 
         if exists:
           subprocess.run(f'ssh {misc.host} "sudo systemctl start server_{branch}.service"', stdout=subprocess.PIPE)

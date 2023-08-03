@@ -313,6 +313,7 @@ elif command == "version-info":
   exists, data = misc.try_get_application(branch)
   if not exists:
     print(f"error: application {branch} does not exist")
+    sys.exit(1)
   if not "activeVersion" in data["response"]:
     print("No active version info for this application")
   else:

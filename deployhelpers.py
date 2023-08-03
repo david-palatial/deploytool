@@ -27,13 +27,6 @@ persistent_volume_path = os.path.join(os.path.dirname(exe_path), "pvc.json")
 docker_dep_path = os.path.join(os.path.dirname(exe_path), "docker_dep.txt")
 docker_sps_path = os.path.join(os.path.dirname(exe_path), "docker_sps.txt")
 
-def does_image_tag_exist(client, image, tag):
-    try:
-        client.images.get(f"{image}:{tag}")
-        return True
-    except docker.errors.ImageNotFound:
-        return False
-
 
 def switch_active_version(branch, version):
     print("Setting active version...\n")
@@ -42,7 +35,8 @@ def switch_active_version(branch, version):
     )
 
 def set_new_version(branch, version, container_tag=None, resetting=False, path=options_path):
-    if version in misc.get_versions(branch):
+    existingVersions = misc.get_versions(branch)
+    if existingVersions and version in existingVersions:
       print(f"error: version {version} already exists. can't create")
       sys.exit(1)
     if container_tag == None:

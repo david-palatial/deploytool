@@ -214,11 +214,14 @@ elif command == "create":
       sys.exit(1)
   
     if tag_has_repo(tag):
-      version = tag.split(':')[1] if version == None else version
-      deployhelpers.set_new_version(branch, version, f'docker.io/dgodfrey206/{tag}')
-    else:
-      version = tag if version == None else version
-      deployhelpers.set_new_version(branch, version, f'docker.io/dgodfrey206/{branch}:{tag}')
+      tag = tag.split(':')[1]
+
+    #if not misc.check_docker_image_exists(f"{branch}:{tag}"):
+    #  print("error: image tag doesn't exist")
+    #  sys.exit(1)
+
+    version = tag if version == None else version
+    deployhelpers.set_new_version(branch, version, f'docker.io/dgodfrey206/{branch}:{tag}')
 
 elif command == "update":
   if len(sys.argv) < 3:

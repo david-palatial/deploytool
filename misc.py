@@ -4,6 +4,7 @@ import requests
 import re
 import string
 import random
+import docker
 
 host = 'david@new-0878.tenant-palatial-platform.coreweave.cloud'
 
@@ -95,10 +96,11 @@ def get_highest_version(versions_list):
 
 def get_versions(application):
   exists, data = try_get_application(application)
-  if not exists:
+  if not exists or not 'versions' in data['response']:
     return None
 
   ret = []
+  print(data["response"])
   versions = data["response"]["versions"]
   for v in range(0, len(versions)):
     ret.append(versions[v]["name"])
@@ -117,3 +119,23 @@ def generate_random_string():
     random_string = ''.join(random.sample(random_string, len(random_string)))
 
     return random_string
+
+def check_docker_image_exists(image_name):
+    try:
+        client = docker.from_env()
+        # Check if the image exists locally
+        client.images.get(image_name)
+        return True
+    except docker.errors.ImageNotFound:
+        try:
+            # If the image is not available locally, attempt to pull it from Docker Hub
+            client.images.pull(image_name)
+            return True
+        except docker.errors.NotFound:
+            return False
+        except docker.errors.APIError as e:
+            print(f"Error occurred while pulling the image: {e}")
+            return False
+    except docker.errors.APIError as e:
+        print(f"Error occurred while checking image existence: {e}")
+        return False

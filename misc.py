@@ -1,6 +1,9 @@
 import subprocess
 import json
+import requests
 import re
+
+host = 'david@new-0878.tenant-palatial-platform.coreweave.cloud'
 
 def file_exists_on_remote(host, remote_file_path):
     try:
@@ -45,7 +48,7 @@ def increment_version(version_string):
                 major += 1
         
         # Determine the original separator (dot or hyphen) from the input version string
-        separator = version_string[1] if version_string[1] in ('.', '-') else '.'
+        separator = version_string[2] if version_string[2] in ('.', '-') else '.'
         
         # Return the updated version string with the original separator
         return f"v{major}{separator}{minor}{separator}{patch}"
@@ -62,5 +65,40 @@ def try_get_application(name):
 
     return True, data
   except subprocess.CalledProcessError as e:
-    print(e)
     return False, None
+
+def get_public_ip():
+    response = requests.get("https://api.ipify.org?format=json")
+    if response.status_code == 200:
+        data = response.json()
+        return data['ip']
+    else:
+        return None
+
+def is_valid_version(version_str):
+    return bool(re.match(r'^v\d+\.\d+\.\d+$|^v\d+-\d+-\d+$', version_str))
+
+def version_key(version_str):
+    return tuple(map(int, version_str[1:].replace('-', '.').split('.')))
+
+def get_highest_version(versions_list):
+    if not versions_list:
+      return None
+    valid_versions = [version for version in versions_list if is_valid_version(version)]
+    if not valid_versions:
+        return None
+
+    highest_version = max(valid_versions, key=version_key)
+    return highest_version
+
+def get_versions(application):
+  exists, data = try_get_application(application)
+  if not exists:
+    return None
+
+  ret = []
+  versions = data["response"]["versions"]
+  for v in range(0, len(versions)):
+    ret.append(versions[v]["name"])
+
+  return ret

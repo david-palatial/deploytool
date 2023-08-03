@@ -1,15 +1,4 @@
 {
-	"httpServer": {
-		"enable": false
-	},
-	"turnServer": {
-		"enable": false
-	},
-	"signallingServer": {
-		"builtinPlugins": {
-			"authentication": {
-				"replicas": 1
-			}
-		}
-	}
+  "name": "test",
+  "buildOptions": { "input": { "containerTag": "docker.io/dgodfrey206/test:v0-0-1" } }
 }

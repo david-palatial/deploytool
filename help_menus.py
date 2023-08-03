@@ -1,5 +1,5 @@
 def show_spsApp_help():
-  print("usage: sps-app [command]\n\
+  print("usage: sps-app [command] [options]\n\
 deploy          Deploy a new build\n\
 reset, restart  Reset an application\n\
 update          Change settings for an application\n\
@@ -8,6 +8,7 @@ delete          Delete an application\n\
 shell           Open a shell to the VM\n\
 config          Set the SPS server\n\
 setup           Set up sps-app\n\
+version-info    Display active version info\n\
 restart-server  Restarts a dedicated server\n\
 restart-webpage Restarts a webpage\n\
 -h, --help      Show help menu\n\n\
@@ -89,3 +90,9 @@ def show_setup_help():
 usage: sps-app setup\n\n\
 -h, --help   Show help menu\n\n\
 Example: sps-app setup");
+
+def show_Version_Info_help():
+  print("Displays information for the currently active version of the application\n\n\
+usage: sps-app version-info <branch>\n\n\
+-h, --help      Show help menu\n\n\
+Example: sps-app version-info oslodemo")

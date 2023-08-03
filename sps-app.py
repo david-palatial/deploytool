@@ -9,9 +9,9 @@ import paramiko
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 import misc
-
-from help_menus import *
-from deployhelpers import print_dots, deploy, reset_application, reset_app_version, set_new_version
+import help_menus
+import deployhelpers
+import shlex
 
 # Get the full path of the executable file
 exe_path = os.path.abspath(__file__)
@@ -129,15 +129,16 @@ def delete_application(branch):
   print(f"Delete {branch}...")
   subprocess.run(f'sps-client application delete --name {branch}')
 
-if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update" and sys.argv[1] != "delete" and sys.argv[1] != "create" and sys.argv[1] != "restart-server" and sys.argv[1] != "shell" and sys.argv[1] != "config" and sys.argv[1] != "setup" and sys.argv[1] != "restart-webpage" and sys.argv[1] != "restart":
-  show_spsApp_help()
+if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update" and sys.argv[1] != "delete" and sys.argv[1] != "create" and sys.argv[1] != "restart-server" and sys.argv[1] != "shell" and sys.argv[1] != "config" and sys.argv[1] != "setup" and sys.argv[1] != "restart-webpage" and sys.argv[1] != "restart" and sys.argv[1] != "version-info":
+  help_menus.show_spsApp_help()
   sys.exit(1)
 
 update_options = [
   "--add-volume-mount",
   "--remove-volume-mount",
   "-h", "--help",
-  "--activeVersion", 
+  "--activeVersion",
+  "--overProvisioning"
 ]
 
 command = sys.argv[1];
@@ -148,16 +149,16 @@ if command == "deploy":
   
   # Convert the list of values into a string
   values_str = ' '.join(values)
-
-  deploy(values_str)
+  
+  deployhelpers.deploy(values)
 
 elif command == "reset" or command == "restart":
   if len(sys.argv) < 3:
-    show_reset_help()
+    help_menus.show_reset_help()
     sys.exit(1)
   for elem in sys.argv[2:]:
     if elem == "-h" or elem == "--help":
-      show_reset_help()
+      help_menus.show_reset_help()
       sys.exit(0)
   branch = sys.argv[2]
   image_tag = None
@@ -165,11 +166,11 @@ elif command == "reset" or command == "restart":
     tag = sys.argv[4]
     if not tag_has_repo(tag):
       image_tag = f"{branch}:{tag}"
-  reset_application(branch, image_tag)
+  deployhelpers.reset_application(branch, image_tag)
 
 elif command == "delete":
   if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":
-    show_delete_help()
+    help_menus.show_delete_help()
     sys.exit(0)
   branch = sys.argv[2]
   delete_application(branch)
@@ -177,7 +178,7 @@ elif command == "delete":
 
 elif command == "create":
   if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":
-    show_create_help()
+    help_menus.show_create_help()
     sys.exit(0)
   branch = sys.argv[2]
   exists, data = misc.try_get_application(branch)
@@ -189,17 +190,17 @@ elif command == "create":
   if len(sys.argv) > 3 and (sys.argv[3] == "--tag" or sys.argv[3] == "-t"):
     if len(sys.argv) != 5:
       print(f"error: {sys.argv[3]} requires an argument")
-      show_create_help()
+      help_menus.show_create_help()
       sys.exit(1)
     tag = sys.argv[4]
     if tag_has_repo(tag):
-      set_new_version(branch, tag.split(':')[1], f'docker.io/dgodfrey206/{tag}')
+      deployhelpers.set_new_version(branch, tag.split(':')[1], f'docker.io/dgodfrey206/{tag}')
     else:
-      set_new_version(branch, tag)
+      deployhelpers.set_new_version(branch, tag)
 
 elif command == "update":
   if len(sys.argv) < 3:
-    show_update_help()
+    help_menus.show_update_help()
     sys.exit(1)
   branch = sys.argv[2]
   added = False
@@ -207,7 +208,7 @@ elif command == "update":
 
   for elem in sys.argv[2:]:
     if elem == "-h" or elem == "--help":
-      show_update_help()
+      help_menus.show_update_help()
       sys.exit(0)
 
   for elem in sys.argv[3:]:
@@ -215,13 +216,13 @@ elif command == "update":
       if removed:
         print("error: already removed the volume, can't add in the same command")
         sys.exit(1)
-      reset_app_version(branch, persistent_volume_path)
+      deployhelpers.reset_app_version(branch, persistent_volume_path)
       added = True
     if elem == "--remove-volume-mount":
       if added:
         print("error: already added the volume, can't remove in the same command")
         sys.exit(1)
-      reset_app_version(branch)
+      deployhelpers.reset_app_version(branch)
       removed = True
 
   rest = sys.argv[3:]
@@ -230,30 +231,30 @@ elif command == "update":
     subprocess.run(f"sps-client application update --name {branch} " + " ".join(rest_not_in_options))
 elif command == "restart-server":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
-    show_resetServer_help()
+    help_menus.show_resetServer_help()
     sys.exit(0)
   if len(sys.argv) < 3 or len(sys.argv) > 3:
-    show_resetServer_help()
+    help_menus.show_resetServer_help()
     sys.exit(0)
   branch = sys.argv[2]
   reset_server(branch)
 elif command == "shell":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
-    show_shell_help()
+    help_menus.show_shell_help()
     sys.exit(0)
   if len(sys.argv) > 3:
-    show_shell_help()
+    help_menus.show_shell_help()
     sys.exit(1)
   subprocess.run('ssh david@new-0878.tenant-palatial-platform.coreweave.cloud')
 elif command == "config":
   if len(sys.argv) < 3 or (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
-    show_config_help()
+    help_menus.show_config_help()
     sys.exit(0)
 
   if sys.argv[2] == "update":
     region = "lga1"
     if len(sys.argv) < 4:
-      show_config_help()
+      help_menus.show_config_help()
       sys.exit(0)
     if sys.argv[3] == "--password" or sys.argv[3] == "-p" or sys.argv[3] == "--access-key" or sys.argv[3] == "--key" or sys.argv[3] == "--auto":
       key = None
@@ -287,11 +288,11 @@ elif command == "config":
     else:
       print(key)
   else:
-    show_config_help()
+    help_menus.show_config_help()
     sys.exit(0)
 elif command == "setup":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
-    show_setup_help()
+    help_menus.show_setup_help()
     sys.exit(0)
   subprocess.run("image-builder auth --username dgodfrey206 --password applesauce --registry 'https://index.docker.io/v1/'")
   #if GetKey() == None:
@@ -303,12 +304,27 @@ elif command == "setup":
   generate_ssh_key_pair()
 elif command == "restart-webpage":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
-    show_Restart_Webpage_help()
+    help_menus.show_Restart_Webpage_help()
     sys.exit(0)
   subprocess.run(f'ssh david@prophet.palatialxr.com "sudo systemctl restart dom_{sys.argv[2]}"')
+elif command == "version-info":
+  if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
+    help_menus.show_Version_Info_help()
+    sys.exit(0)
+  branch = sys.argv[2]
+  exists, data = misc.try_get_application(branch)
+  if not exists:
+    print(f"error: application {branch} does not exist")
+  if not "activeVersion" in data["response"]:
+    print("No active version info for this application")
+  else:
+    result = subprocess.run(f'ssh {misc.host} cat /usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log', shell=True, stdout=subprocess.PIPE)
+    output_str = result.stdout.decode('utf-8')
+    
+    #json_str = json.dum
 
 else:
   for i in range(1, len(sys.argv)):
     opt = sys.argv[i]
     if opt == "--help" or opt == "-h" or opt == "help":
-      show_spsApp_help()
+      help_menus.show_spsApp_help()

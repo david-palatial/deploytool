@@ -1,14 +1,22 @@
 import sys
 import subprocess
+import shutil
 import os
 import time
 import queue
 import threading
 import docker
+import shlex
 import json
 import random
 import string
+import socket
 import misc
+import time
+import tempfile
+import paramiko
+from datetime import datetime
+
 
 # Get the full path of the executable file
 exe_path = os.path.abspath(__file__)
@@ -67,9 +75,9 @@ def set_new_version(branch, version, container_tag=None, resetting=False, path=o
         subprocess.run(f"sps-client version delete --name {version} --application {branch}")
     print("Creating new version...")
     subprocess.check_output("timeout 2")
-
     subprocess.run(
-        ['sps-client', 'version', 'create', '--application', branch, '--name', version, '--buildOptions.input.containerTag', container_tag, '--buildOptions.credentials.registry', "https://index.docker.io/v1/", '--buildOptions.credentials.username', 'dgodfrey206', '--buildOptions.credentials.password', 'applesauce', '-f', path ]
+        ['sps-client', 'version', 'create', '--application', branch, '--name', version, '--buildOptions.input.containerTag', container_tag, '--buildOptions.credentials.registry', "https://index.docker.io/v1/", '--buildOptions.credentials.username', 'dgodfrey206', '--buildOptions.credentials.password', 'applesauce', '--turnServer.disable', '--httpServer.disable']
+         # v0.10.0 update makes -f path not work
     )
     switch_active_version(branch, version)
 
@@ -269,7 +277,7 @@ def deploy(argv):
     single_options = ["-F", "-A", "-C", "-I", "-S"]
 
     reset_version = False
-    argv = argv.split()
+    #argv = argv.split()
 
     if len(argv) < 1:
         show_help()
@@ -283,6 +291,8 @@ def deploy(argv):
           opt = argv[i][j]
           match opt:
             case 'A':
+              app_only = True
+            case 'C':
               app_only = True
             case 'S':
               server_only = True
@@ -348,9 +358,6 @@ def deploy(argv):
         sys.exit(1)
 
     os.chdir(dir_name)
-    if version == None:
-      version = new_string_format(os.path.basename(dir_name).replace('_', '-')).lower()
-    image_tag = f"{branch}:{version}"
 
     if not server_only:
         if not os.path.exists(os.path.join(os.getcwd(), "LinuxClient")) and not os.path.exists(os.path.join(os.getcwd(), "Linux")):
@@ -364,13 +371,19 @@ def deploy(argv):
 
         exists, data = misc.try_get_application(branch)
         if exists:
-          d = data['response']
           if not self_selected_version:
-            version = misc.increment_version(d['activeVersion'])
-          image_tag = f"{branch}:{version}"
+            highestVersion = misc.get_highest_version(misc.get_versions(branch))
+            if highestVersion == None:
+              version = "v0-0-1"
+            else:
+              version = misc.increment_version(highestVersion)
+        else:
+          version = "v0-0-1"
+
+        image_tag = f"{branch}:{version}"
 
         if use_firebase:
-            build_docker_image(branch, image_tag)
+            pass #build_docker_image(branch, image_tag)
         else:
             subprocess.run(f'image-builder create --package . --tag "docker.io/dgodfrey206/{image_tag}"')
 
@@ -387,6 +400,37 @@ def deploy(argv):
             if app_only:
               sys.stdout.write("Finishing up")
               print_dots(6)
+
+        current_datetime = datetime.now()
+        versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/client/{version}_{current_datetime.strftime("%Y%m%d-%H_%M_%S")}.log'
+        activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log'
+
+        data = f"""{{
+          "application": {branch},
+          "version": {version},
+          "versionLogLocation": {versionInfoAddress},
+          "timeUploaded": "{current_datetime.strftime("%Y-%m-%d %H:%M:%S")}",
+          "customDockerBuild": "{use_firebase}",
+          "uploader": {{
+            "hostName": "{socket.gethostname()}",
+            "ipAddress": "{misc.get_public_ip()}",
+            "sourceDirectory": "{dir_name}"
+          }}
+        }}"""
+
+        tmp = tempfile.mktemp()
+        with open(tmp, 'w') as f:
+          json.dump(data, f)
+
+        shutil.copy(tmp, f"{tmp}.copy")
+
+        subprocess.run('scp {0}.copy {1}:~/tmp/'.format(tmp, misc.host), shell=True, stdout=subprocess.PIPE)
+        subprocess.run(f'ssh {misc.host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
+        subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), versionInfoAddress), shell=True, stdout=subprocess.PIPE)
+        subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), activeVersionAddress), shell=True, stdout=subprocess.PIPE)
+
+        print("Version info saved to: " + versionInfoAddress)
+
         os.chdir("..")
 
     if not app_only:
@@ -395,22 +439,54 @@ def deploy(argv):
             print(f"error: directory LinuxServer does not exist in {os.path.abspath(os.getcwd())}")
             sys.exit(1)
 
-        host = 'david@new-0878.tenant-palatial-platform.coreweave.cloud'
-
-        exists = misc.file_exists_on_remote(host, f'/etc/systemd/system/server_{branch}.service')
+        exists = misc.file_exists_on_remote(misc.host, f'/etc/systemd/system/server_{branch}.service')
  
         if exists:
-          subprocess.run(f'ssh {host} "sudo systemctl stop server_{branch}.service"')
+          subprocess.run(f'ssh {misc.host} "sudo systemctl stop server_{branch}.service"', stdout=subprocess.PIPE)
         else:
-          subprocess.run(f'ssh {host} mkdir -p ~/servers/{branch}/LinuxServer')
+          subprocess.run(f'ssh {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE)
 
-        subprocess.check_output(f'scp -r LinuxServer/* {host}:~/servers/{branch}/LinuxServer/')
+        #subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', stdout=subprocess.PIPE)
 
         if exists:
-          subprocess.run(f'ssh {host} "sudo systemctl start server_{branch}.service"')
+          subprocess.run(f'ssh {misc.host} "sudo systemctl start server_{branch}.service"', stdout=subprocess.PIPE)
 
-        subprocess.run(
-          f'ssh {host} "echo "{dir_name if version == None else version}" > ~/servers/{branch}/version.log"'
-        )
+    
+        current_datetime = datetime.now()
+        versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/{version}_{current_datetime.strftime("%Y%m%d_%H_%M_%S")}.log'
+        activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/activeVersion.log'
+
+        appExists, data = misc.try_get_application(branch)
+        if appExists:
+          version = data["response"]["activeVersion"]
+        else:
+          version = "n/a"
+
+        data = f"""
+{{
+          "application": "{branch}",
+          "version": "{version}",
+          "versionLogLocation": "{versionInfoAddress}",
+          "timeUploaded": "{str(current_datetime.strftime("%Y-%m-%d %H:%M:%S"))}",
+          "dedicatedServerLocation": "/home/david/servers/{branch}/",
+          "uploader": {{
+            "hostName": "{socket.gethostname()}",
+            "ipAddress": "{str(misc.get_public_ip())}",
+            "sourceDirectory": "{str(dir_name)}"
+          }}
+}}"""
+
+        tmp = tempfile.mktemp()
+        with open(tmp, 'w') as f:
+          json.dump(data, f)
+
+        shutil.copy(tmp, f"{tmp}.copy")
+
+        subprocess.run('scp {0}.copy {1}:~/tmp/'.format(tmp, misc.host), shell=True, stdout=subprocess.PIPE)
+        subprocess.run(f'ssh {misc.host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
+        subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), versionInfoAddress), shell=True, stdout=subprocess.PIPE)
+        subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), activeVersionAddress), shell=True, stdout=subprocess.PIPE)
+
+        print(f"Version info saved to {versionInfoAddress}")
 
     print("FINISHED")

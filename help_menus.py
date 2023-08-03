@@ -52,7 +52,7 @@ def show_create_help():
 usage: sps-app create <branch> [options...]\n\n\
 -t, --tag                  Create an application using an existing Docker image tag\n\
     --vn, --version-name   Optionally provide a name for the new version when creating from an image tag\n\
--h, --help     Show help menu\n\n\
+-h, --help                 Show help menu\n\n\
 Example: sps-app create prophet\n\
 Example: sps-app create prophet --tag 22-10-05_build-DG_Prophet")
 

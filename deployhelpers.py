@@ -18,7 +18,6 @@ import paramiko
 import help_menus
 from datetime import datetime
 
-
 # Get the full path of the executable file
 exe_path = os.path.abspath(__file__)
 
@@ -27,32 +26,6 @@ options_path = os.path.join(os.path.dirname(exe_path), "options.json")
 persistent_volume_path = os.path.join(os.path.dirname(exe_path), "pvc.json")
 docker_dep_path = os.path.join(os.path.dirname(exe_path), "docker_dep.txt")
 docker_sps_path = os.path.join(os.path.dirname(exe_path), "docker_sps.txt")
-
-def generate_random_letters():
-    letters = random.choices(string.ascii_lowercase, k=2)
-    numbers = random.choices(string.digits, k=1)
-    return ''.join(random.sample(letters + numbers, k=3))
-
-def transform_string(input_string):
-    # Split the input string into date and random text parts
-    date_part, random_text_part = input_string.split("-build-")
-
-    # Remove dashes from the date part
-    date_part = date_part.replace("-", "")
-
-    # Generate random letters and numbers
-    random_chars = generate_random_letters()
-
-    # Construct the output string
-    output_string = f"{date_part}-{random_text_part}-{random_chars}"
-
-    return output_string
-
-def new_string_format(str):
-  return str + "-" + generate_random_letters()
-
-def make_application_name(dir_name):
-  return transform_string(dir_name)
 
 def does_image_tag_exist(client, image, tag):
     try:
@@ -69,6 +42,9 @@ def switch_active_version(branch, version):
     )
 
 def set_new_version(branch, version, container_tag=None, resetting=False, path=options_path):
+    if version in misc.get_versions(branch):
+      print(f"error: version {version} already exists. can't create")
+      sys.exit(1)
     if container_tag == None:
       container_tag = f"docker.io/dgodfrey206/{branch}:{version}"
     if resetting == True:
@@ -287,7 +263,7 @@ def deploy(argv):
 
     for i in range(0, len(argv)):
         opt = argv[i]
-        if opt[0] == "-" and opt not in options:
+        if opt.startswith("--") and opt not in options:
             print(f"Invalid option {opt}")
             help_menus.show_Deploy_help()
             sys.exit(1)
@@ -296,7 +272,8 @@ def deploy(argv):
             sys.exit(0)
         if opt == "--branch" or opt == "-b":
             if i + 1 >= len(argv):
-                print("error: --branch provided without an argument")
+                print(f"error: {opt} provided without an argument")
+                print(f"Example: sps-app deploy 22-11-23_build-A-CD {opt} dev")
                 sys.exit(1)
             branch = argv[i + 1]
         if opt == "--app-only" or opt == "--client-only":
@@ -308,7 +285,8 @@ def deploy(argv):
             app_only = True
         if opt == "--vn" or opt == "--version-name":
             if i + 1 >= len(argv):
-              print("error: --version-name provided without an argument")
+              print(f"error: {opt} provided without an argument")
+              print(f"Example: sps-app deploy . -b test {opt} testVersion")
               sys.exit(1)
             version = argv[i + 1]
             self_selected_version = True
@@ -337,9 +315,9 @@ def deploy(argv):
         sys.exit(1)
 
     if branch == None:
-        print("error: -b or --branch is required (one of dev, prophet, demo, etc.)")
-        print("Example: sps-app deploy 22-11-23_build-A-CD --branch dev")
-        sys.exit(1)
+        branch = misc.generate_random_string()
+
+    branch = branch.replace('_', '-').replace('.', '-').lower()
 
     os.chdir(dir_name)
 
@@ -353,16 +331,12 @@ def deploy(argv):
         elif os.path.exists(os.path.join(os.getcwd(), "LinuxClient")):
           os.chdir("LinuxClient")
 
-        exists, data = misc.try_get_application(branch)
-        if exists:
-          if not self_selected_version:
-            highestVersion = misc.get_highest_version(misc.get_versions(branch))
-            if highestVersion == None:
-              version = "v0-0-1"
-            else:
-              version = misc.increment_version(highestVersion)
-        else:
-          version = "v0-0-1"
+        if not self_selected_version:
+          highestVersion = misc.get_highest_version(misc.get_versions(branch))
+          if highestVersion == None:
+            version = "v0-0-1"
+          else:
+            version = misc.increment_version(highestVersion)
 
         image_tag = f"{branch}:{version}"
 
@@ -375,6 +349,7 @@ def deploy(argv):
           print("FINISHED")
           sys.exit(0)
 
+        exists, data = misc.try_get_application(branch)
         # Set a new version if this version doesn't already exist
         if exists:
             print(f'making version: {version}')
@@ -402,6 +377,8 @@ def deploy(argv):
           }}
         }}"""
 
+        data = dir_name
+
         tmp = tempfile.mktemp()
         with open(tmp, 'w') as f:
           json.dump(data, f)
@@ -409,11 +386,9 @@ def deploy(argv):
         shutil.copy(tmp, f"{tmp}.copy")
 
         subprocess.run('scp {0}.copy {1}:~/tmp/'.format(tmp, misc.host), shell=True, stdout=subprocess.PIPE)
-        subprocess.run(f'ssh {misc.host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
+        subprocess.run(f'ssh {misc.host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/client', stdout=subprocess.PIPE)
         subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), versionInfoAddress), shell=True, stdout=subprocess.PIPE)
         subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), activeVersionAddress), shell=True, stdout=subprocess.PIPE)
-
-        print("Version info saved to: " + versionInfoAddress)
 
         os.chdir("..")
 
@@ -460,6 +435,8 @@ def deploy(argv):
           }}
 }}"""
 
+        data = dir_name
+
         tmp = tempfile.mktemp()
         with open(tmp, 'w') as f:
           json.dump(data, f)
@@ -470,7 +447,5 @@ def deploy(argv):
         subprocess.run(f'ssh {misc.host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
         subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), versionInfoAddress), shell=True, stdout=subprocess.PIPE)
         subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), activeVersionAddress), shell=True, stdout=subprocess.PIPE)
-
-        print(f"Version info saved to {versionInfoAddress}")
 
     print("FINISHED")

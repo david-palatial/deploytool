@@ -2,6 +2,8 @@ import subprocess
 import json
 import requests
 import re
+import string
+import random
 
 host = 'david@new-0878.tenant-palatial-platform.coreweave.cloud'
 
@@ -102,3 +104,16 @@ def get_versions(application):
     ret.append(versions[v]["name"])
 
   return ret
+
+def generate_random_string():
+    letters = string.ascii_letters
+    digits = string.digits
+
+    first_char = random.choice(letters)
+
+    rest_chars = random.choices(letters + digits, k=8)
+
+    random_string = ''.join([first_char] + rest_chars)
+    random_string = ''.join(random.sample(random_string, len(random_string)))
+
+    return random_string

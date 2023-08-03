@@ -178,23 +178,47 @@ elif command == "create":
   if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":
     help_menus.show_create_help()
     sys.exit(0)
+
   branch = sys.argv[2]
   exists, data = misc.try_get_application(branch)
   if not exists:
     subprocess.run(f'sps-client application create --name {branch}')
-  if data["response"].get("activeVersion", {}):
+  elif "activeVersion" in data["response"]:
     print(f"error: {branch} already exists with an active version")
     sys.exit(1)
-  if len(sys.argv) > 3 and (sys.argv[3] == "--tag" or sys.argv[3] == "-t"):
-    if len(sys.argv) != 5:
-      print(f"error: {sys.argv[3]} requires an argument")
-      help_menus.show_create_help()
+
+  if len(sys.argv) > 3:
+    args = sys.argv[3:]
+    tag = None
+    version = None
+    for i in range(0, len(args)):
+      if args[i] == "-t" or args[i] == "--tag":
+        if i + 1 >= len(args):
+          print(f"error: {args[i]} requires an argument")
+          sys.exit(1)
+        tag = args[i+1]
+      elif args[i] == "--vn" or args[i] == "--version-name":
+        if i + 1 >= len(args):
+          print(f"error: {args[i]} requires an argument")
+          sys.exit(1)
+        version = args[i+1]
+      elif args[i] == "-h" or args[i] == "--help":
+        help_menus.show_create_help()
+        sys.exit(0)
+
+    if tag == None and version != None:
+      print(f"error: can't create a version without a tag. either provide one with -t or --tag, or deploy a new build with 'sps-app deploy <dir> -b {branch}'")
       sys.exit(1)
-    tag = sys.argv[4]
+    elif tag == None:
+      print("error: invalid argument supplied")
+      sys.exit(1)
+  
     if tag_has_repo(tag):
-      deployhelpers.set_new_version(branch, tag.split(':')[1], f'docker.io/dgodfrey206/{tag}')
+      version = tag.split(':')[1] if version == None else version
+      deployhelpers.set_new_version(branch, version, f'docker.io/dgodfrey206/{tag}')
     else:
-      deployhelpers.set_new_version(branch, tag)
+      version = tag if version == None else version
+      deployhelpers.set_new_version(branch, version, f'docker.io/dgodfrey206/{branch}:{tag}')
 
 elif command == "update":
   if len(sys.argv) < 3:
@@ -321,6 +345,7 @@ elif command == "version-info":
     output_str = result.stdout.decode('utf-8')
     
     #json_str = json.dum
+    print(output_str)
 
 else:
   for i in range(1, len(sys.argv)):

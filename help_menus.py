@@ -19,7 +19,7 @@ Example: sps-app reset demo")
 def show_Deploy_help():
     print(
         "Deploys a packaged UE client to the SPS server and/or a packaged UE server to the palatial VM\n\n\
-usage: sps-app deploy <dir> [-b or --branch] <branch> [options...]\n\n\
+usage: sps-app deploy <dir> [options...]\n\n\
 -A, -C, --app-only, --client-only  Only deploy the client\n\
 -S,     --server-only              Only deploy the server\n\
 -I,     --image-only               Deploy the image to Docker Hub only\n\
@@ -31,7 +31,7 @@ usage: sps-app deploy <dir> [-b or --branch] <branch> [options...]\n\n\
 -h,     --help                     Get help for commands\n\n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\
 Example: sps-app deploy 23-06-13_build-A_CD_OfficeStandalone -b officedemo --server-only\n\
-Example: sps-app deploy . -b tankhouse --firebase -A --add-volume-mount --config ../settings.json")
+Example: sps-app deploy . -FA --add-volume-mount --config ../settings.json")
 
 def show_reset_help():
   print("Deletes and recreates the client application\n\n\

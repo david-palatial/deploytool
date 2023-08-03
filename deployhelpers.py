@@ -15,6 +15,7 @@ import misc
 import time
 import tempfile
 import paramiko
+import help_menus
 from datetime import datetime
 
 
@@ -132,23 +133,6 @@ def reset_application(branch, image_tag=None):
     sys.stdout.write("Finishing up")
     print_dots(6)
     print("FINISHED")
-
-def show_help():
-    print(
-        "Deploys a packaged UE client to the SPS server and/or a packaged UE server to the palatial VM\n\n\
-usage: sps-app deploy <dir> [-b or --branch] <branch> [options...]\n\n\
--A, -C, --app-only, --client-only  Only deploy the client\n\
--S,     --server-only              Only deploy the server\n\
--I,     --image-only               Deploy the image to Docker Hub only\n\
--b,     --branch                   The application branch to deploy to (dev, demo, prophet, etc.)\n\
-        --vn, --version-name       Name the version for the application\n\
-        --add-volume-mount         Add a storage volume to the application\n\
--F,     --firebase                 Deploys it with the necessary dependencies for firebase\n\
-        --config                   Path to the JSON configuration file\n\
--h,     --help                     Get help for commands\n\n\
-Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\
-Example: sps-app deploy 23-06-13_build-A_CD_OfficeStandalone -b officedemo --server-only\n\
-Example: sps-app deploy . -b tankhouse --firebase -A --add-volume-mount --config ../settings.json")
 
 def print_dots(duration):
     q = queue.Queue()
@@ -280,7 +264,7 @@ def deploy(argv):
     #argv = argv.split()
 
     if len(argv) < 1:
-        show_help()
+        help_menus.show_Deploy_help()
         sys.exit(1)
 
     dir_name = os.path.abspath(argv[0])
@@ -305,10 +289,10 @@ def deploy(argv):
         opt = argv[i]
         if opt[0] == "-" and opt not in options:
             print(f"Invalid option {opt}")
-            show_help()
+            help_menus.show_Deploy_help()
             sys.exit(1)
         if opt == "--help" or opt == "-h":
-            show_help()
+            help_menus.show_Deploy_help()
             sys.exit(0)
         if opt == "--branch" or opt == "-b":
             if i + 1 >= len(argv):

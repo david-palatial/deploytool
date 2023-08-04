@@ -270,7 +270,7 @@ elif command == "shell":
   if len(sys.argv) > 3:
     help_menus.show_shell_help()
     sys.exit(1)
-  subprocess.run('ssh {misc.host}')
+  subprocess.run(f'ssh {misc.host}')
 elif command == "config":
   if len(sys.argv) < 3 or (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_config_help()

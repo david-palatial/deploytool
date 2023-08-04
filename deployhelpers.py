@@ -404,7 +404,6 @@ def deploy(argv):
         if exists:
           subprocess.run(f'ssh {misc.host} "sudo systemctl start server_{branch}.service"', stdout=subprocess.PIPE)
 
-    
         current_datetime = datetime.now()
         versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/{version}_{current_datetime.strftime("%Y%m%d_%H_%M_%S")}.log'
         activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/activeVersion.log'
@@ -430,7 +429,8 @@ def deploy(argv):
 }}"""
 
         data = dir_name
-
+        
+        x="""
         tmp = tempfile.mktemp()
         with open(tmp, 'w') as f:
           json.dump(data, f)
@@ -438,8 +438,11 @@ def deploy(argv):
         shutil.copy(tmp, f"{tmp}.copy")
 
         subprocess.run('scp {0}.copy {1}:~/tmp/'.format(tmp, misc.host), shell=True, stdout=subprocess.PIPE)
+        print('1')
         subprocess.run(f'ssh {misc.host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
-        subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), versionInfoAddress), shell=True, stdout=subprocess.PIPE)
-        subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), activeVersionAddress), shell=True, stdout=subprocess.PIPE)
-
+        print('2')
+        subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), versionInfoAddress), shell=True)
+        print('3')
+        subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), activeVersionAddress), shell=True)
+"""
     print("FINISHED")

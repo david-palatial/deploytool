@@ -214,6 +214,7 @@ elif command == "create":
       sys.exit(1)
   
     if tag_has_repo(tag):
+      branch = tag.split(':')[0]
       tag = tag.split(':')[1]
 
     #if not misc.check_docker_image_exists(f"{branch}:{tag}"):

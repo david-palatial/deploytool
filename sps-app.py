@@ -212,9 +212,11 @@ elif command == "create":
     elif tag == None:
       print("error: invalid argument supplied")
       sys.exit(1)
+
+    repo = branch
   
     if tag_has_repo(tag):
-      branch = tag.split(':')[0]
+      repo = tag.split(':')[0]
       tag = tag.split(':')[1]
 
     #if not misc.check_docker_image_exists(f"{branch}:{tag}"):
@@ -222,7 +224,7 @@ elif command == "create":
     #  sys.exit(1)
 
     version = tag if version == None else version
-    deployhelpers.set_new_version(branch, version, f'docker.io/dgodfrey206/{branch}:{tag}')
+    deployhelpers.set_new_version(branch, version, f'docker.io/dgodfrey206/{repo}:{tag}')
 
 elif command == "update":
   if len(sys.argv) < 3:

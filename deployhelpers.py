@@ -282,7 +282,7 @@ def deploy(argv):
               print(f"error: {opt} provided without an argument")
               print(f"Example: sps-app deploy . -b test {opt} testVersion")
               sys.exit(1)
-            version = argv[i + 1]
+            version = argv[i + 1].lower().replace('_', '-').replace('.', '-')
             self_selected_version = True
         if opt == "--config":
             if i + 1 >= len(argv):
@@ -337,7 +337,10 @@ def deploy(argv):
         if use_firebase:
             build_docker_image(branch, image_tag)
         else:
-            subprocess.run(f'image-builder create --package . --tag "docker.io/dgodfrey206/{image_tag}"')
+            opt = ""
+            if os.path.exists(".temp"):
+              opt = "--skip-building"
+            subprocess.run(f'image-builder create --package . --tag docker.io/dgodfrey206/{image_tag} {opt}')
 
         if image_only:
           print("FINISHED")
@@ -393,11 +396,11 @@ def deploy(argv):
             sys.exit(1)
 
         exists = misc.file_exists_on_remote(misc.host, f'/etc/systemd/system/server_{branch}.service')
- 
+
         if exists:
           subprocess.run(f'ssh {misc.host} "sudo systemctl stop server_{branch}.service"', stdout=subprocess.PIPE)
-        else:
-          subprocess.run(f'ssh {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE)
+        
+        subprocess.run(f'ssh {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE)
 
         subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', stdout=subprocess.PIPE)
 

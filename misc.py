@@ -6,12 +6,12 @@ import string
 import random
 import docker
 
-host = 'david@new-0878.tenant-palatial-platform.coreweave.cloud'
+host = 'david@palatial.tenant-palatial-platform.coreweave.cloud'
 
 def file_exists_on_remote(host, remote_file_path):
     try:
         # SSH command to check if the file exists
-        command = f'ssh {host} test -f {remote_file_path} && echo "True" || echo "False"'
+        command = f'ssh {host} test -f {remote_file_path} && echo True || echo False'
 
         # Run the command and suppress the output
         result = subprocess.run(command, shell=True, capture_output=True, text=True)
@@ -100,7 +100,6 @@ def get_versions(application):
     return None
 
   ret = []
-  print(data["response"])
   versions = data["response"]["versions"]
   for v in range(0, len(versions)):
     ret.append(versions[v]["name"])

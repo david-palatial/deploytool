@@ -188,6 +188,38 @@ ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_Template{fold
     os.system(f"docker build -t dgodfrey206/{image_tag} ..")
     os.system(f"docker push dgodfrey206/{image_tag}")
 
+def build_docker_image_for_server(branch, image_tag):
+  Dockerfile = f"""
+FROM adamrehn/ue4-runtime:20.04-cudagl11.1.1
+
+# Install our additional packages
+USER root
+
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
+RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt \
+    apt-get update && apt-get -y upgrade && \
+    apt-get install -y --no-install-recommends \
+        libsecret-1-0 \
+        libgtk2.0-0:i386 \
+        libsm6:i386
+
+USER ue4
+
+# Copy the packaged project files from the build context
+COPY --chown=ue4:ue4 ./LinuxServer /home/project/LinuxServer
+
+# Ensure the project's startup script is executable
+RUN chmod +x "/home/project/LinuxServer/ThirdTurn_TemplateServer.sh"
+
+
+    """
+
+  with open("Dockerfile", "w") as f:
+    f.write(Dockerfile)
+    
+  os.system(f"docker build -t dgodfrey206/{image_tag} .")
+  os.system(f"docker push dgodfrey206/{image_tag}")
+
 def starts_with_single_hyphen(s):
     return s.startswith('-') and not s.startswith('--')
 
@@ -382,15 +414,18 @@ def deploy(argv):
 
         shutil.copy(tmp, f"{tmp}.copy")
 
-        subprocess.run('scp {0}.copy {1}:~/tmp/'.format(tmp, misc.host), shell=True, stdout=subprocess.PIPE)
+        subprocess.run('scp {0}.copy {1}:~/.tmp'.format(tmp, misc.host), shell=True, stdout=subprocess.PIPE)
         subprocess.run(f'ssh {misc.host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/client', stdout=subprocess.PIPE)
-        subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), versionInfoAddress), shell=True, stdout=subprocess.PIPE)
-        subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), activeVersionAddress), shell=True, stdout=subprocess.PIPE)
+        subprocess.run('ssh {} "cat ~/.tmp | sudo tee {}"'.format(misc.host, os.path.basename(tmp), versionInfoAddress), shell=True, stdout=subprocess.PIPE)
+        subprocess.run('ssh {} "cat ~/.tmp | sudo tee {}"'.format(misc.host, os.path.basename(tmp), activeVersionAddress), shell=True, stdout=subprocess.PIPE)
+        
 
         os.chdir("..")
 
     if not app_only:
-        print("\nUploading server...")
+        if not server_only:
+          print("\n")
+        print("Uploading server...")
         if not os.path.exists(os.path.join(os.getcwd(), "LinuxServer")):
             print(f"error: directory LinuxServer does not exist in {os.path.abspath(os.getcwd())}")
             sys.exit(1)
@@ -402,13 +437,14 @@ def deploy(argv):
         
         subprocess.run(f'ssh {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE)
 
-        subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', stdout=subprocess.PIPE)
+        #subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', stdout=subprocess.PIPE)
 
         if exists:
           subprocess.run(f'ssh {misc.host} "sudo systemctl start server_{branch}.service"', stdout=subprocess.PIPE)
 
         current_datetime = datetime.now()
-        versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/{version}_{current_datetime.strftime("%Y%m%d_%H_%M_%S")}.log'
+        date = current_datetime.strftime("%Y%m%d_%H_%M_%S")
+        versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/{version}_{date}.log'
         activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/activeVersion.log'
 
         appExists, data = misc.try_get_application(branch)
@@ -432,20 +468,16 @@ def deploy(argv):
 }}"""
 
         data = dir_name
-        
-        x="""
+
         tmp = tempfile.mktemp()
         with open(tmp, 'w') as f:
           json.dump(data, f)
 
         shutil.copy(tmp, f"{tmp}.copy")
 
-        subprocess.run('scp {0}.copy {1}:~/tmp/'.format(tmp, misc.host), shell=True, stdout=subprocess.PIPE)
-        print('1')
+        subprocess.run('scp {0}.copy {1}:~/.tmp'.format(tmp, misc.host), shell=True, stdout=subprocess.PIPE)
         subprocess.run(f'ssh {misc.host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
-        print('2')
-        subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), versionInfoAddress), shell=True)
-        print('3')
-        subprocess.run('ssh {} "cat ~/tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), activeVersionAddress), shell=True)
-"""
+        subprocess.run('ssh {} "cat ~/.tmp | sudo tee {}"'.format(misc.host, os.path.basename(tmp), versionInfoAddress), shell=True, stdout=subprocess.PIPE)
+        subprocess.run('ssh {} "cat ~/.tmp | sudo tee {}"'.format(misc.host, os.path.basename(tmp), activeVersionAddress), shell=True, stdout=subprocess.PIPE)
+
     print("FINISHED")

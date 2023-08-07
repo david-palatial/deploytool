@@ -340,17 +340,22 @@ elif command == "version-info":
     help_menus.show_Version_Info_help()
     sys.exit(0)
   branch = sys.argv[2]
+  print('1')
   exists, data = misc.try_get_application(branch)
   if not exists:
     print(f"error: application {branch} does not exist")
     sys.exit(1)
+  print(2)
   if not "activeVersion" in data["response"]:
     print("No active version info for this application")
   else:
+    print(3)
     result = subprocess.run(f'ssh {misc.host} cat /usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    print(4)
     if result != None:
       output_str = result.stdout.decode('utf-8')
       print(output_str)
+    print(5)
 
 else:
   for i in range(1, len(sys.argv)):

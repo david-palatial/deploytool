@@ -350,7 +350,7 @@ elif command == "version-info":
     print("No active version info for this application")
   else:
     print(3)
-    result = subprocess.run(f'ssh {misc.host} cat /usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result = subprocess.run(f'ssh {misc.host} cat /usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log')
     print(4)
     if result != None:
       output_str = result.stdout.decode('utf-8')

@@ -347,11 +347,10 @@ elif command == "version-info":
   if not "activeVersion" in data["response"]:
     print("No active version info for this application")
   else:
-    result = subprocess.run(f'ssh {misc.host} cat /usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log', shell=True, stdout=subprocess.PIPE)
-    output_str = result.stdout.decode('utf-8')
-    
-    #json_str = json.dum
-    print(output_str)
+    result = subprocess.run(f'ssh {misc.host} cat /usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if result != None:
+      output_str = result.stdout.decode('utf-8')
+      print(output_str)
 
 else:
   for i in range(1, len(sys.argv)):

@@ -348,15 +348,11 @@ elif command == "version-info":
     print("No active version info for this application")
   else:
     remote_path = f'/usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log'
-    print(1)
     if misc.file_exists_on_remote(misc.host, remote_path):
-      print('file exists')
       result = subprocess.run(f'ssh {misc.host} cat {remote_path}')
-      print('got result')
       if result != None:
         output_str = result.stdout.decode('utf-8')
         print(output_str)
-    print(2)
 
 else:
   for i in range(1, len(sys.argv)):

@@ -70,7 +70,7 @@ def try_get_application(name):
     return True, data
   except subprocess.CalledProcessError as e:
     return False, None
-  except json.decoder.JSONDecodeError
+  except json.decoder.JSONDecodeError:
     return False, None
 
 def get_public_ip():

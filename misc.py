@@ -5,6 +5,7 @@ import re
 import string
 import random
 import docker
+import sys
 
 host = 'david@palatial.tenant-palatial-platform.coreweave.cloud'
 
@@ -63,8 +64,7 @@ def try_get_application(name):
   command = f"sps-client application read --name {name}"
   try:
     output = subprocess.check_output(command, shell=True, stderr=subprocess.PIPE)
-    print(output)
-    sys.exit(0)
+
     data = json.loads(output.decode())
 
     return True, data

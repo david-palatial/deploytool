@@ -64,13 +64,16 @@ def try_get_application(name):
   command = f"sps-client application read --name {name}"
   try:
     output = subprocess.check_output(command, shell=True, stderr=subprocess.PIPE)
+    output = str(output.decode())
+    prefix = "Error: "
 
-    data = json.loads(output.decode())
+    if output.startswith(prefix):
+      output = output[len(prefix):]
 
-    return True, data
+    data = json.loads(output)
+
+    return data["statusCode"] == 200, data
   except subprocess.CalledProcessError as e:
-    return False, None
-  except json.decoder.JSONDecodeError:
     return False, None
 
 def get_public_ip():

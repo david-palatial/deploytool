@@ -69,7 +69,7 @@ def try_get_application(name):
 
     if output.startswith(prefix):
       output = output[len(prefix):]
-    print(output)
+
     data = json.loads(output)
 
     return data["statusCode"] == 200, data

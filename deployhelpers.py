@@ -449,7 +449,7 @@ def deploy(argv):
 
         appExists, data = misc.try_get_application(branch)
         if appExists:
-          version = data["response"]["activeVersion"]
+          version = data["response"].get("activeVersion", "n/a")
         else:
           version = "n/a"
 

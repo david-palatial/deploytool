@@ -437,7 +437,7 @@ def deploy(argv):
         
         subprocess.run(f'ssh {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE)
 
-        #subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', stdout=subprocess.PIPE)
+        subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', stdout=subprocess.PIPE)
 
         if exists:
           subprocess.run(f'ssh {misc.host} "sudo systemctl start server_{branch}.service"', stdout=subprocess.PIPE)

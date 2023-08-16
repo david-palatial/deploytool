@@ -63,14 +63,17 @@ def increment_version(version_string):
 def try_get_application(name):
   command = f"sps-client application read --name {name}"
   try:
-    output = subprocess.check_output(command, shell=True, stderr=subprocess.PIPE)
-    output = str(output.decode())
-    prefix = "Error: "
+    output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    if output.startswith(prefix):
-      output = output[len(prefix):]
+    json_data = output.stdout
+    
+    if output.stderr:
+      prefix = "Error: "
+      json_data = output.stderr[len(prefix):]
 
-    data = json.loads(output)
+    json_data = json_data.decode('utf-8')
+
+    data = json.loads(json_data)
 
     return data["statusCode"] == 200, data
   except subprocess.CalledProcessError as e:

@@ -449,9 +449,9 @@ def deploy(argv):
 
         appExists, data = misc.try_get_application(branch)
         if appExists:
-          version = data["response"].get("activeVersion", "n/a")
+          version = data["response"].get("activeVersion", dir_name)
         else:
-          version = "n/a"
+          version = dir_name
 
         data = f"""
 {{
@@ -468,16 +468,16 @@ def deploy(argv):
 }}"""
 
         data = dir_name
-        noop="""
+
         tmp = tempfile.mktemp()
         with open(tmp, 'w') as f:
           json.dump(data, f)
 
         shutil.copy(tmp, f"{tmp}.copy")
 
-        subprocess.run('scp {0}.copy {1}:~/.tmp'.format(tmp, misc.host), shell=True, stdout=subprocess.PIPE)
+        subprocess.run('scp {0}.copy {1}:~/.tmp/'.format(tmp, misc.host), shell=True, stdout=subprocess.PIPE)
         subprocess.run(f'ssh {misc.host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
-        subprocess.run('ssh {} "cat ~/.tmp | sudo tee {}"'.format(misc.host, os.path.basename(tmp), versionInfoAddress), shell=True, stdout=subprocess.PIPE)
-        subprocess.run('ssh {} "cat ~/.tmp | sudo tee {}"'.format(misc.host, os.path.basename(tmp), activeVersionAddress), shell=True, stdout=subprocess.PIPE)
-"""
+        subprocess.run('ssh {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), os.path.basename(tmp), versionInfoAddress), shell=True, stdout=subprocess.PIPE)
+        subprocess.run('ssh {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), os.path.basename(tmp), activeVersionAddress), shell=True, stdout=subprocess.PIPE)
+
     print("FINISHED")

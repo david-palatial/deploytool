@@ -413,14 +413,7 @@ def deploy(argv):
           subprocess.run(f'ssh {misc.host} "sudo systemctl stop server_{branch}.service"', stdout=subprocess.PIPE)
 
         print("Making directory...")        
-        result = subprocess.run(f'ssh {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        
-        print("Standard Output:")
-        print(result.stdout)
-
-        print("Standard Error:")
-        print(result.stderr)
-        sys.exit(0)
+        subprocess.run(f'ssh {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         print("Uploading server...")
         subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', shell=True, text=True, capture_output=False)

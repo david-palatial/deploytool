@@ -389,95 +389,42 @@ def deploy(argv):
               sys.stdout.write("Finishing up")
               print_dots(6)
 
-        current_datetime = datetime.now()
-        versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/client/{version}_{current_datetime.strftime("%Y%m%d-%H_%M_%S")}.log'
-        activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log'
+        appInfo = {
+          "customDockerBuild": use_firebase
+        }
 
-        data = f"""{{
-          "application": {branch},
-          "version": {version},
-          "versionLogLocation": {versionInfoAddress},
-          "timeUploaded": "{current_datetime.strftime("%Y-%m-%d %H:%M:%S")}",
-          "customDockerBuild": "{use_firebase}",
-          "uploader": {{
-            "hostName": "{socket.gethostname()}",
-            "ipAddress": "{misc.get_public_ip()}",
-            "sourceDirectory": "{dir_name}"
-          }}
-        }}"""
-
-        data = dir_name
-
-        tmp = tempfile.mktemp()
-        with open(tmp, 'w') as f:
-          json.dump(data, f)
-
-        shutil.copy(tmp, f"{tmp}.copy")
-
-        subprocess.run('scp {0}.copy {1}:~/.tmp'.format(tmp, misc.host), shell=True, stdout=subprocess.PIPE)
-        subprocess.run(f'ssh {misc.host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/client', stdout=subprocess.PIPE)
-        subprocess.run('ssh {} "cat ~/.tmp | sudo tee {}"'.format(misc.host, os.path.basename(tmp), versionInfoAddress), shell=True, stdout=subprocess.PIPE)
-        subprocess.run('ssh {} "cat ~/.tmp | sudo tee {}"'.format(misc.host, os.path.basename(tmp), activeVersionAddress), shell=True, stdout=subprocess.PIPE)
-        
-
+        print("Saving version info...")
+        misc.save_version_info(branch, appInfo, client=True)
         os.chdir("..")
 
     if not app_only:
         if not server_only:
           print("\n")
-        print("Uploading server...")
+        
         if not os.path.exists(os.path.join(os.getcwd(), "LinuxServer")):
             print(f"error: directory LinuxServer does not exist in {os.path.abspath(os.getcwd())}")
             sys.exit(1)
 
+        print("Checking for service file...")
         exists = misc.file_exists_on_remote(misc.host, f'/etc/systemd/system/server_{branch}.service')
 
         if exists:
+          print("Stopping running server...")
           subprocess.run(f'ssh {misc.host} "sudo systemctl stop server_{branch}.service"', stdout=subprocess.PIPE)
-        
-        subprocess.run(f'ssh {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE)
 
-        subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', stdout=subprocess.PIPE)
+        print("Making directory...")        
+        subprocess.run(f'ssh {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        print("Uploading server...")
+        subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', shell=True, text=True, capture_output=False)
+
+        print("\nUpload complete\n")
 
         if exists:
+          print("Starting server...")
           subprocess.run(f'ssh {misc.host} "sudo systemctl start server_{branch}.service"', stdout=subprocess.PIPE)
 
-        current_datetime = datetime.now()
-        date = current_datetime.strftime("%Y%m%d_%H_%M_%S")
-        versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/{version}_{date}.log'
-        activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/activeVersion.log'
-
-        appExists, data = misc.try_get_application(branch)
-        if appExists:
-          version = data["response"].get("activeVersion", dir_name)
-        else:
-          version = dir_name
-
-        data = f"""
-{{
-          "application": "{branch}",
-          "version": "{version}",
-          "versionLogLocation": "{versionInfoAddress}",
-          "timeUploaded": "{str(current_datetime.strftime("%Y-%m-%d %H:%M:%S"))}",
-          "dedicatedServerLocation": "/home/david/servers/{branch}/",
-          "uploader": {{
-            "hostName": "{socket.gethostname()}",
-            "ipAddress": "{str(misc.get_public_ip())}",
-            "sourceDirectory": "{str(dir_name)}"
-          }}
-}}"""
-
-        data = dir_name
-
-        tmp = tempfile.mktemp()
-        with open(tmp, 'w') as f:
-          json.dump(data, f)
-
-        shutil.copy(tmp, f"{tmp}.copy")
-
-        subprocess.run('scp {0}.copy {1}:~/.tmp/'.format(tmp, misc.host), shell=True, stdout=subprocess.PIPE)
-        subprocess.run(f'ssh {misc.host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
-        subprocess.run('ssh {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), os.path.basename(tmp), versionInfoAddress), shell=True, stdout=subprocess.PIPE)
-        subprocess.run('ssh {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(misc.host, os.path.basename(tmp), os.path.basename(tmp), activeVersionAddress), shell=True, stdout=subprocess.PIPE)
+        print("Saving version info...")
+        misc.save_version_info(branch, client=False)
 
     print("FINISHED")

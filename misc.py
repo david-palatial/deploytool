@@ -1,3 +1,6 @@
+from datetime import datetime
+import socket
+import os
 import subprocess
 import json
 import requests
@@ -5,6 +8,8 @@ import re
 import string
 import random
 import docker
+import tempfile
+import shutil
 import sys
 
 host = 'david@palatial.tenant-palatial-platform.coreweave.cloud'
@@ -147,3 +152,58 @@ def check_docker_image_exists(image_name):
     except docker.errors.APIError as e:
         print(f"Error occurred while checking image existence: {e}")
         return False
+
+def save_version_info(branch, data={}, client=True):
+  current_datetime = datetime.now()
+  date = current_datetime.strftime("%Y%m%d_%H_%M_%S")
+  dir_name = os.path.basename(os.getcwd())
+
+  appExists, jsonData = try_get_application(branch)
+  if appExists:
+    version = jsonData["response"].get("activeVersion", dir_name)
+  else:
+    version = dir_name
+
+  if client:
+    subprocess.run(f'ssh {host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/client', stdout=subprocess.PIPE)
+    versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/client/{version}_{current_datetime.strftime("%Y%m%d-%H_%M_%S")}.log'
+    activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log'
+  else:
+    subprocess.run(f'ssh {host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
+    versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/{version}_{date}.log'
+    activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/activeVersion.log'
+
+  info = {
+    "application": branch,
+    "version": version,
+    "versionLogLocation": versionInfoAddress,
+    "timeUploaded": current_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+    "dedicatedServerLocation": f"/home/david/servers/{branch}/",
+    "uploader": {
+      "hostName": socket.gethostname(),
+      "ipAddress": f"{get_public_ip()}",
+      "sourceDirectory": dir_name
+    }
+  }
+
+  data.update(info)
+
+  json_data = json.dumps(data, indent=2)
+
+  tmp = tempfile.mktemp()
+  with open(tmp, 'w') as f:
+    f.write(json_data)
+
+  shutil.copy(tmp, f"{tmp}.copy")
+
+  base_filename = os.path.basename(tmp)
+
+  subprocess.run('scp {}.copy {}:~/.tmp/'.format(tmp, host), shell=True, stdout=subprocess.PIPE)
+  subprocess.run('ssh {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, versionInfoAddress), shell=True, stdout=subprocess.PIPE)
+  subprocess.run('ssh {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, activeVersionAddress), shell=True, stdout=subprocess.PIPE)
+
+  os.remove(tmp)
+  os.remove(f"{tmp}.copy")
+
+  print("Version information saved to " + versionInfoAddress)
+  

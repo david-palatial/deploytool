@@ -174,11 +174,10 @@ def save_version_info(branch, data={}, client=True):
     activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/activeVersion.log'
 
   info = {
-    "application": branch,
+    "branch": branch,
     "version": version,
     "versionLogLocation": versionInfoAddress,
     "timeUploaded": current_datetime.strftime("%Y-%m-%d %H:%M:%S"),
-    "dedicatedServerLocation": f"/home/david/servers/{branch}/",
     "uploader": {
       "hostName": socket.gethostname(),
       "ipAddress": f"{get_public_ip()}",

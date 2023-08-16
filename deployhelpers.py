@@ -424,7 +424,11 @@ def deploy(argv):
           print("Starting server...")
           subprocess.run(f'ssh {misc.host} "sudo systemctl start server_{branch}.service"', stdout=subprocess.PIPE)
 
+        data = {
+          "dedicatedServerLocation": f"/home/david/servers/{branch}/"
+        }
+
         print("Saving version info...")
-        misc.save_version_info(branch, client=False)
+        misc.save_version_info(branch, data, client=False)
 
     print("FINISHED")

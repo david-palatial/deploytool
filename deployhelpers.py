@@ -468,7 +468,7 @@ def deploy(argv):
 }}"""
 
         data = dir_name
-
+        noop="""
         tmp = tempfile.mktemp()
         with open(tmp, 'w') as f:
           json.dump(data, f)
@@ -479,5 +479,5 @@ def deploy(argv):
         subprocess.run(f'ssh {misc.host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
         subprocess.run('ssh {} "cat ~/.tmp | sudo tee {}"'.format(misc.host, os.path.basename(tmp), versionInfoAddress), shell=True, stdout=subprocess.PIPE)
         subprocess.run('ssh {} "cat ~/.tmp | sudo tee {}"'.format(misc.host, os.path.basename(tmp), activeVersionAddress), shell=True, stdout=subprocess.PIPE)
-
+"""
     print("FINISHED")

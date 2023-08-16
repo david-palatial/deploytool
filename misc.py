@@ -169,7 +169,7 @@ def save_version_info(branch, data={}, client=True):
     versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/client/{version}_{current_datetime.strftime("%Y%m%d-%H_%M_%S")}.log'
     activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log'
   else:
-    subprocess.run(f'ssh {host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
+    subprocess.run(f'ssh {host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server')
     versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/{version}_{date}.log'
     activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/activeVersion.log'
 

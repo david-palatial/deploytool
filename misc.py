@@ -154,15 +154,27 @@ def check_docker_image_exists(image_name):
         return False
 
 def save_version_info(branch, data={}, client=True):
+  print("Saving version info...")
   current_datetime = datetime.now()
   date = current_datetime.strftime("%Y%m%d_%H_%M_%S")
   dir_name = os.path.basename(os.getcwd())
 
   appExists, jsonData = try_get_application(branch)
+  version = dir_name
+  timeCreated = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+  timeLastUpdated = timeCreated
+
   if appExists:
-    version = jsonData["response"].get("activeVersion", dir_name)
-  else:
-    version = dir_name
+    version = jsonData["response"].get("activeVersion")
+    if not version:
+      version = dir_name
+    else:
+      versions = get_versions(branch)
+      if versions:
+        for i in range(0, len(versions)):
+          if versions[i]["name"] == version:
+            timeCreated = versions[i]["timeCreated"]
+            timeLastUpdated = versions[i]["timeLastUpdated"]
 
   if client:
     subprocess.run(f'ssh {host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/client', stdout=subprocess.PIPE)
@@ -177,11 +189,13 @@ def save_version_info(branch, data={}, client=True):
     "branch": branch,
     "version": version,
     "versionLogLocation": versionInfoAddress,
-    "timeUploaded": current_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+    "timeCreated": timeCreated,
+    "timeLastUpdated": timeLastUpdated,
     "uploader": {
       "hostName": socket.gethostname(),
-      "ipAddress": f"{get_public_ip()}",
-      "sourceDirectory": dir_name
+      "ipAddress": str(get_public_ip()),
+      "sourceDirectory": dir_name,
+      "command": ' '.join(sys.argv)
     }
   }
 

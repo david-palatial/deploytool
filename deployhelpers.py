@@ -393,7 +393,6 @@ def deploy(argv):
           "customDockerBuild": use_firebase
         }
 
-        print("Saving version info...")
         misc.save_version_info(branch, appInfo, client=True)
         os.chdir("..")
 
@@ -428,7 +427,6 @@ def deploy(argv):
           "dedicatedServerLocation": f"/home/david/servers/{branch}/"
         }
 
-        print("Saving version info...")
         misc.save_version_info(branch, data, client=False)
 
     print("FINISHED")

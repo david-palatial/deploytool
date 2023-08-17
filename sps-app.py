@@ -219,12 +219,11 @@ elif command == "create":
       repo = tag.split(':')[0]
       tag = tag.split(':')[1]
 
-    #if not misc.check_docker_image_exists(f"{branch}:{tag}"):
-    #  print("error: image tag doesn't exist")
-    #  sys.exit(1)
-
     version = tag if version == None else version
     deployhelpers.set_new_version(branch, version, f'docker.io/dgodfrey206/{repo}:{tag}')
+
+    data = { "uploader": { "sourceDirectory": "n/a" } }
+    save_version_info(branch, data, client=True)
 
 elif command == "update":
   if len(sys.argv) < 3:
@@ -347,12 +346,21 @@ elif command == "version-info":
   if not "activeVersion" in data["response"]:
     print("No active version info for this application")
   else:
-    remote_path = f'/usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log'
-    if misc.file_exists_on_remote(misc.host, remote_path):
-      result = subprocess.run(f'ssh {misc.host} cat {remote_path}')
-      if result != None:
-        output_str = result.stdout.decode('utf-8')
-        print(output_str)
+    remote_client_path = f'/usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log'
+    remote_server_path = f'/usr/local/bin/cw-app-logs/{branch}/server/activeVersion.log'
+    if misc.file_exists_on_remote(misc.host, remote_client_path):
+      print("Client info:")
+      result = subprocess.run(f'ssh {misc.host} cat {remote_client_path}', stdout=subprocess.PIPE)
+      print(result.stdout.decode('utf-8'))
+    else:
+      print("No version information saved for client")
+
+    if misc.file_exists_on_remote(misc.host, remote_server_path):
+      print("Server info:")
+      result = subprocess.run(f'ssh {misc.host} cat {remote_server_path}', stdout=subprocess.PIPE)
+      print(result.stdout.decode('utf-8'))
+    else:
+      print("No version information saved for server")
 
 else:
   for i in range(1, len(sys.argv)):

@@ -350,14 +350,14 @@ elif command == "version-info":
     remote_server_path = f'/usr/local/bin/cw-app-logs/{branch}/server/activeVersion.log'
     if misc.file_exists_on_remote(misc.host, remote_client_path):
       print("Client info:")
-      result = subprocess.run(f'ssh {misc.host} cat {remote_client_path}', stdout=subprocess.PIPE)
+      result = subprocess.run(f'ssh -v {misc.host} cat {remote_client_path}', stdout=subprocess.PIPE)
       print(result.stdout.decode('utf-8'))
     else:
       print("No version information saved for client")
 
     if misc.file_exists_on_remote(misc.host, remote_server_path):
       print("Server info:")
-      result = subprocess.run(f'ssh {misc.host} cat {remote_server_path}', stdout=subprocess.PIPE)
+      result = subprocess.run(f'ssh -v {misc.host} cat {remote_server_path}', stdout=subprocess.PIPE)
       print(result.stdout.decode('utf-8'))
     else:
       print("No version information saved for server")

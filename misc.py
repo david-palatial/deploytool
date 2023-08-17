@@ -11,6 +11,7 @@ import docker
 import tempfile
 import shutil
 import sys
+import time
 
 host = 'david@palatial.tenant-palatial-platform.coreweave.cloud'
 
@@ -108,13 +109,22 @@ def get_highest_version(versions_list):
     highest_version = max(valid_versions, key=version_key)
     return highest_version
 
-def get_versions(application):
+
+def get_version_objects(application):
   exists, data = try_get_application(application)
   if not exists or not 'versions' in data['response']:
     return None
 
   ret = []
   versions = data["response"]["versions"]
+  for v in range(0, len(versions)):
+    ret.append(versions[v])
+
+  return ret
+
+def get_versions(application):
+  ret = []
+  versions = get_version_objects(application)
   for v in range(0, len(versions)):
     ret.append(versions[v]["name"])
 
@@ -169,7 +179,7 @@ def save_version_info(branch, data={}, client=True):
     if not version:
       version = dir_name
     else:
-      versions = get_versions(branch)
+      versions = get_version_objects(branch)
       if versions:
         for i in range(0, len(versions)):
           if versions[i]["name"] == version:
@@ -181,7 +191,7 @@ def save_version_info(branch, data={}, client=True):
     versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/client/{version}_{current_datetime.strftime("%Y%m%d-%H_%M_%S")}.log'
     activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log'
   else:
-    subprocess.run(f'ssh -v {host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server')
+    subprocess.run(f'ssh -v {host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
     versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/{version}_{date}.log'
     activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/activeVersion.log'
 
@@ -211,12 +221,12 @@ def save_version_info(branch, data={}, client=True):
 
   base_filename = os.path.basename(tmp)
 
-  subprocess.run('scp {}.copy {}:~/.tmp/'.format(tmp, host), shell=True, stdout=subprocess.PIPE)
-  subprocess.run('ssh -v {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, versionInfoAddress), shell=True, stdout=subprocess.PIPE)
-  subprocess.run('ssh -v {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, activeVersionAddress), shell=True, stdout=subprocess.PIPE)
+  subprocess.run('scp {}.copy {}:~/.tmp/'.format(tmp, host), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run('ssh -v {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, versionInfoAddress), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run('ssh -v {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, activeVersionAddress), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   os.remove(tmp)
   os.remove(f"{tmp}.copy")
 
-  print("Version information saved to " + versionInfoAddress)
+  print("\nVersion information saved to " + versionInfoAddress)
   

@@ -415,7 +415,7 @@ def deploy(argv):
         print("Making directory...")        
         subprocess.run(f'ssh -v {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-        print("Uploading server...")
+        print("\nUploading server...")
         subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', shell=True, text=True, capture_output=False)
 
         print("\nUpload complete\n")

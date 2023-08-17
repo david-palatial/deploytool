@@ -390,7 +390,8 @@ def deploy(argv):
               print_dots(6)
 
         appInfo = {
-          "customDockerBuild": use_firebase
+          "customDockerBuild": use_firebase,
+          "uploader": { "sourceDirectory": os.path.dirname(dir_name) }
         }
 
         misc.save_version_info(branch, appInfo, client=True)

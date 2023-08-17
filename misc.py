@@ -20,7 +20,7 @@ def file_exists_on_remote(host, remote_file_path):
         command = f'ssh {host} test -f {remote_file_path} && echo True || echo False'
 
         # Run the command and suppress the output
-        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        result = subprocess.run(command, shell=True, text=True, stdout=subprocess.PIPE)
 
         output = result.stdout.strip()
         exists = True if output == 'True' else False

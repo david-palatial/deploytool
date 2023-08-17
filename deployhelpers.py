@@ -410,10 +410,10 @@ def deploy(argv):
 
         if exists:
           print("Stopping running server...")
-          subprocess.run(f'ssh {misc.host} "sudo systemctl stop server_{branch}.service"', stdout=subprocess.PIPE)
+          subprocess.run(f'ssh -v {misc.host} "sudo systemctl stop server_{branch}.service"', stdout=subprocess.PIPE)
 
         print("Making directory...")        
-        subprocess.run(f'ssh {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        subprocess.run(f'ssh -v {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         print("Uploading server...")
         subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', shell=True, text=True, capture_output=False)
@@ -422,7 +422,7 @@ def deploy(argv):
 
         if exists:
           print("Starting server...")
-          subprocess.run(f'ssh {misc.host} "sudo systemctl start server_{branch}.service"', stdout=subprocess.PIPE)
+          subprocess.run(f'ssh -v {misc.host} "sudo systemctl start server_{branch}.service"', stdout=subprocess.PIPE)
 
         data = {
           "dedicatedServerLocation": f"/home/david/servers/{branch}/"

@@ -223,7 +223,7 @@ elif command == "create":
     deployhelpers.set_new_version(branch, version, f'docker.io/dgodfrey206/{repo}:{tag}')
 
     data = { "uploader": { "sourceDirectory": "n/a" } }
-    save_version_info(branch, data, client=True)
+    misc.save_version_info(branch, data, client=True)
 
 elif command == "update":
   if len(sys.argv) < 3:

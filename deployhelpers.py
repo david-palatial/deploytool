@@ -370,7 +370,7 @@ def deploy(argv):
             build_docker_image(branch, image_tag)
         else:
             opt = ""
-            if os.path.exists(".temp"):
+            if os.path.exists(os.path.join(".temp", "result.json")):
               opt = "--skip-building"
             subprocess.run(f'image-builder create --package . --tag docker.io/dgodfrey206/{image_tag} {opt}')
 

@@ -113,7 +113,7 @@ def get_highest_version(versions_list):
 def get_version_objects(application):
   exists, data = try_get_application(application)
   if not exists or not 'versions' in data['response']:
-    return None
+    return []
 
   ret = []
   versions = data["response"]["versions"]
@@ -125,8 +125,6 @@ def get_version_objects(application):
 def get_versions(application):
   ret = []
   versions = get_version_objects(application)
-  if not versions:
-    return ret
   for v in range(0, len(versions)):
     ret.append(versions[v]["name"])
 

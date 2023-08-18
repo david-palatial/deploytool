@@ -172,7 +172,7 @@ elif command == "delete":
     sys.exit(0)
   branch = sys.argv[2]
   delete_application(branch)
-  subprocess.run(f'ssh {misc.host} ./deployment/cleanup.sh {branch}', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run(f'ssh -v {misc.host} ./deployment/cleanup.sh {branch}', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 elif command == "create":
   if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":

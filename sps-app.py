@@ -167,12 +167,12 @@ elif command == "reset" or command == "restart":
   deployhelpers.reset_application(branch, image_tag)
 
 elif command == "delete":
-  if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":
+  if len(sys.argv) < 3 or "-h" in sys.argv or "--help" in sys.argv:
     help_menus.show_delete_help()
     sys.exit(0)
-  branch = sys.argv[2]
-  delete_application(branch)
-  subprocess.run(f'ssh -v {misc.host} ./deployment/cleanup.sh {branch}', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+  branches = ' '.join(sys.argv[2:])
+  subprocess.run(f'ssh -v {misc.host} ./link-deployment/util/cleanup.sh {branches}')
 
 elif command == "create":
   if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":

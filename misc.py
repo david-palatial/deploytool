@@ -66,6 +66,19 @@ def increment_version(version_string):
         # If the input string doesn't match the pattern, return version_string
         return version_string
 
+def get_sps_json_output(command):
+  output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+  json_data = output.stdout
+    
+  if output.stderr:
+    prefix = "Error: "
+    json_data = output.stderr[len(prefix):]
+
+  json_data = json_data.decode('utf-8')
+
+  return json.loads(json_data)
+
 def try_get_application(name):
   command = f"sps-client application read --name {name}"
   try:

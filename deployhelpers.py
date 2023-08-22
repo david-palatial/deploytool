@@ -44,12 +44,25 @@ def set_new_version(branch, version, container_tag=None, resetting=False, path=o
     if resetting == True:
         print("Deleting version...")
         subprocess.run(f"sps-client version delete --name {version} --application {branch}")
+
     print("Creating new version...")
     subprocess.check_output("timeout 2")
-    subprocess.run(
-        ['sps-client', 'version', 'create', '--application', branch, '--name', version, '--buildOptions.input.containerTag', container_tag, '--buildOptions.credentials.registry', "https://index.docker.io/v1/", '--buildOptions.credentials.username', 'dgodfrey206', '--buildOptions.credentials.password', 'applesauce', '--turnServer.disable', '--httpServer.disable']
-         # v0.10.0 update makes -f path not work
-    )
+
+    command = f'sps-client version create -a {branch} --name {version} --buildOptions.input.containerTag {container_tag} --buildOptions.credentials.registry https://index.docker.io/v1/ --buildOptions.credentials.username dgodfrey206 --buildOptions.credentials.password applesauce --turnServer.disable --httpServer.disable'
+
+    count = 1
+    data = misc.get_sps_json_output(command)
+
+    while data["statusCode"] != 200 and count != 3:
+      print("error: " + data["response"])
+      print("Retrying...")
+      subprocess.check_output("timeout 2")
+      data = misc.get_sps_json_output(command)
+      count += 1
+
+    if data["statusCode"] == 200:
+      print(json.dumps(data, indent=7))
+
     switch_active_version(branch, version)
 
 def reset_app_version(branch, path=options_path):

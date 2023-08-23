@@ -81,7 +81,7 @@ def make_new_application(branch, version, tag=None, wait=True):
     subprocess.run(f"sps-client application create --name {branch}")
     set_new_version(branch, version, container_tag=tag)
 
-def reset_application(branch, image_tag=None):
+def reset_application(branch, version=None, image_tag=None):
     exists, data = misc.try_get_application(branch)
     ctag = None
 
@@ -107,7 +107,8 @@ def reset_application(branch, image_tag=None):
     print(f"Delete {branch}...")
     subprocess.run(f"sps-client application delete --name {branch}")
 
-    version = image_tag.split(':')[1].lower().replace('_', '-')
+    if not version:
+      version = image_tag.split(':')[1].lower().replace('_', '-')
     make_new_application(branch, version, ctag)
 
     sys.stdout.write("Finishing up")

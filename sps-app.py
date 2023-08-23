@@ -164,7 +164,10 @@ elif command == "reset" or command == "restart":
     tag = sys.argv[4]
     if not tag_has_repo(tag):
       image_tag = f"{branch}:{tag}"
-  deployhelpers.reset_application(branch, image_tag)
+  deployhelpers.reset_application(branch, image_tag=image_tag)
+
+  data = { "uploader": { "sourceDirectory": "n/a" } }
+  misc.save_version_info(branch, data, client=True)
 
 elif command == "delete":
   if len(sys.argv) < 3 or "-h" in sys.argv or "--help" in sys.argv:

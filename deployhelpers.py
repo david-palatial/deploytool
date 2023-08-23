@@ -85,31 +85,27 @@ def reset_application(branch, image_tag=None):
     exists, data = misc.try_get_application(branch)
     ctag = None
     if exists:
+        if not "activeVersion" in data["response"]:
+            print(f"error: app '{branch}' has no set version. can't reset")
+            sys.exit(1)
+
         activeVersion = data["response"]["activeVersion"].lower().replace('_', '-').replace('.', '-')
         if image_tag == None:
             image_tag = f"{branch}:{activeVersion}"
             ctag = f"docker.io/dgodfrey206/{image_tag}"
-            if not activeVersion:
-                print(f"error: app '{branch}' has no set version. can't reset")
-                sys.exit(1)
-            else:
-                versions = data["response"]["versions"]
-                for v in range(0, len(versions)):
-                    if versions[v]["name"] == activeVersion:
-                        ctag = versions[v]["buildOptions"]["input"]["containerTag"]
-                        break
+            
+            versions = get_version_objects(branch)
+            for v in range(0, len(versions)):
+                if versions[v]["name"] == activeVersion:
+                    ctag = versions[v]["buildOptions"]["input"]["containerTag"]
+                    break
 
         print(f"Delete {branch}...")
         subprocess.run(f"sps-client application delete --name {branch}")
     else:
-        print(f"error: app '{branch}' does not exist")
+        print(f"error: app '{branch}' does not exist. deploy a new build or provide an existing image tag to reset to (i.e sps-app reset {branch} --tag 23-03-14_build-A_CD_RelatedBanyan)")
         sys.exit(1)
 
-    if image_tag == None:
-        print(
-            f"error: app '{branch}' does not exist. deploy a new build or provide an existing image tag to reset to (i.e sps-app reset {branch} --tag 23-03-14_build-A_CD_RelatedBanyan)"
-        )
-        sys.exit(1)
     version = image_tag.split(':')[1].lower().replace('_', '-')
     make_new_application(branch, version, ctag)
 

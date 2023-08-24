@@ -17,6 +17,8 @@ import tempfile
 import paramiko
 import help_menus
 from datetime import datetime
+import tempfile
+import shutil
 
 # Get the full path of the executable file
 exe_path = os.path.abspath(__file__)
@@ -27,18 +29,41 @@ persistent_volume_path = os.path.join(os.path.dirname(exe_path), "pvc.json")
 docker_dep_path = os.path.join(os.path.dirname(exe_path), "docker_dep.txt")
 docker_sps_path = os.path.join(os.path.dirname(exe_path), "docker_sps.txt")
 
+def generate_config_file(branch, default_config, container_tag=None, owner="test"):
+  config_data = misc.load_json(r'C:\Users\employee\Desktop\deploytool\configuration\default.json')
 
-def switch_active_version(branch, version):
-    print("Setting active version...\n")
-    subprocess.run(
-        f"sps-client application update --name {branch} --activeVersion {version}"
-    )
+  config_data.update(default_config)
+    
+  json_data = misc.load_json(r'C:\Users\employee\Desktop\deploytool\configuration\config.json')
+  if owner in json_data.keys():
+    if branch in json_data[owner].keys():
+      config_data.update(json_data[owner][branch])
+    elif "default" in json_data[owner].keys():
+      config_data.update(json_data[owner]["default"])
 
-def set_new_version(branch, version, container_tag=None, resetting=False, path=options_path):
+  tmp = tempfile.mktemp()
+  with open(tmp, 'w') as f:
+    json.dump(config_data, f)
+
+  shutil.copy(tmp, f"{tmp}.copy")
+
+  return (tmp, f"{tmp}.copy", config_data)
+
+def switch_active_version(branch, version, path=None):
+  print("Setting active version...\n")
+
+  if not path:
+    subprocess.run(f"sps-client application update --name {branch} --activeVersion {version}")
+  else:
+    subprocess.run(f"sps-client application update --name {branch} -f {path}")
+
+def set_new_version(branch, version, container_tag=None, resetting=False, path=options_path, owner="test"):
     existingVersions = misc.get_versions(branch)
     if existingVersions and version in existingVersions:
-      print(f"error: version {version} already exists. can't create")
-      sys.exit(1)
+      switch_active_version(branch, version)
+      return
+      #print(f"error: version {version} already exists. can't create")
+      #sys.exit(1)
     if container_tag == None:
       container_tag = f"docker.io/dgodfrey206/{branch}:{version}"
     if resetting == True:
@@ -48,8 +73,23 @@ def set_new_version(branch, version, container_tag=None, resetting=False, path=o
     print("Creating new version...")
     subprocess.check_output("timeout 2")
 
-    command = f'sps-client version create -a {branch} --name {version} --buildOptions.input.containerTag {container_tag} --buildOptions.credentials.registry https://index.docker.io/v1/ --buildOptions.credentials.username dgodfrey206 --buildOptions.credentials.password applesauce --turnServer.disable --httpServer.disable'
+    default_config = {
+      "name": version,
+      "buildOptions": {
+        "input": {
+          "containerTag": container_tag
+        },
+        "credentials": {
+          "registry": "https://index.docker.io/v1/",
+          "username": "dgodfrey206",
+          "password": "applesauce"
+        }
+      }
+    }
 
+    tmp, temp_file, json_data = generate_config_file(branch, default_config, container_tag)
+
+    command = f'sps-client version create -a {branch} --name {version} -f {temp_file}'
     count = 1
     data = misc.get_sps_json_output(command)
 
@@ -62,8 +102,22 @@ def set_new_version(branch, version, container_tag=None, resetting=False, path=o
 
     if data["statusCode"] == 200:
       print(json.dumps(data, indent=7))
+    else:
+      print("error: " + data["response"])
+      sys.exit(1)
 
-    switch_active_version(branch, version)
+    json_data.update({
+      "name": branch,
+      "activeVersion": version
+    })
+
+    tmp2, temp_file_2, _ = generate_config_file(branch, json_data, container_tag=container_tag)
+    switch_active_version(branch, version, path=temp_file_2)
+
+    os.remove(tmp)
+    os.remove(tmp2)
+    os.remove(temp_file)
+    os.remove(temp_file_2)
 
 def reset_app_version(branch, path=options_path):
     exists, data = misc.try_get_application(branch)
@@ -134,6 +188,7 @@ def print_dots(duration):
             break
         print(item, end="")
         sys.stdout.flush()
+
 
 def build_docker_image(branch, image_tag):
     # Get the current working directory
@@ -244,6 +299,7 @@ def deploy(argv):
     image_only = False
     version = None
     self_selected_version = False
+    owner = None
 
     global options_path
 
@@ -269,6 +325,7 @@ def deploy(argv):
         "--add-volume-mount",
         "--firebase",
         "--version-name"
+        "--owner"
     ]
 
     single_options = ["-F", "-A", "-C", "-I", "-S"]
@@ -298,6 +355,9 @@ def deploy(argv):
             case 'F':
               use_firebase = True
 
+    if app_only and image_only:
+      image_only = False
+
     for i in range(0, len(argv)):
         opt = argv[i]
         if opt.startswith("--") and opt not in options:
@@ -320,6 +380,11 @@ def deploy(argv):
         if opt == "--image-only":
             image_only = True
             app_only = True
+        if opt == "--owner":
+          if i + 1 >= len(argv):
+            print("error: --owner provided without an argument")
+            sys.exit(1)
+          owner = argv[i+1]
         if opt == "--vn" or opt == "--version-name":
             if i + 1 >= len(argv):
               print(f"error: {opt} provided without an argument")

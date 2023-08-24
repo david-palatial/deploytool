@@ -66,6 +66,11 @@ def increment_version(version_string):
         # If the input string doesn't match the pattern, return version_string
         return version_string
 
+def load_json(file_path):
+  with open(file_path, "r") as f:
+    json_data = f.read()
+  return json.loads(json_data)
+
 def get_sps_json_output(command):
   output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 

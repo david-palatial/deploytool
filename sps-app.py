@@ -245,7 +245,7 @@ elif command == "create":
       tag = tag.split(':')[1]
 
     version = tag if version == None else version
-    deployhelpers.set_new_version(branch, version, f'{env_values["REGISTRY_URL"]}{repo}:{tag}')
+    deployhelpers.set_new_version(branch, version, f'{env_values["REPOSITORY_URL"]}{repo}:{tag}')
 
     data = { "uploader": { "sourceDirectory": "n/a" } }
     misc.save_version_info(branch, data, client=True)
@@ -318,7 +318,7 @@ elif command == "config":
       process_config_argument(args, "--coreweave-namespace", 'COREWEAVE_NAMESPACE', i, len(args))
       process_config_argument(args, "--region",              'REGION',              i, len(args))
       process_config_argument(args, "--server-name",         'SPS_REST_API_SERVER', i, len(args))
-      process_config_argument(args, "--registry-url",        'REGISTRY_URL',        i, len(args))
+      process_config_argument(args, "--repository-url",      'REPOSITORY_URL',      i, len(args))
       process_config_argument(args, "--image-registry",      'IMAGE_REGISTRY',      i, len(args))
       process_config_argument(args, "--api-key",             'API_KEY',             i, len(args))
 

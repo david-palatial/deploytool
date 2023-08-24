@@ -24,6 +24,7 @@ usage: sps-app deploy <dir> [options...]\n\n\
 -S,     --server-only              Only deploy the server\n\
 -I,     --image-only               Deploy the image to Docker Hub only\n\
 -b,     --branch                   The application branch to deploy to (dev, demo, prophet, etc.)\n\
+        --owner                    Specifies the subdomain to which application belongs\n\
         --vn, --version-name       Name the version for the application\n\
         --add-volume-mount         Add a storage volume to the application\n\
 -F,     --firebase                 Deploys it with the necessary dependencies for firebase\n\
@@ -68,9 +69,9 @@ def show_config_help():
   print("Configuration options for sps-app\n\n\
 usage: sps-app config [options...]\n\n\
 --api-key              Get or set the API key for the REST API server\n\
---registry-username    Get or set the image registry username\n\
+--registry-username  Get or set the image registry username\n\
 --registry-password    Get or set the image registry password\n\
---registry-url         Get or set the base domain for the image repository\n\
+--repository-url       Get or set the base domain for the image repository\n\
 --coreweave-namespace  Get or set the coreweave namespace\n\
 --server-name          Get or set the name of the REST API server\n\
 --region               Get or set the region\n\

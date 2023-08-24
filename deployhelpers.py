@@ -26,12 +26,13 @@ env_values = dotenv_values(os.path.join(exe_path, ".env"))
 env_path = os.path.join(exe_path, ".env")
 options_path = os.path.join(exe_path, "configuration", "config.json")
 
-def generate_config_file(branch, default_config, container_tag=None, owner="test"):
-  config_data = misc.load_json(os.path.join(os.path.dirname(options_path), 'default.json'))
+def generate_config_file(branch, default_config, container_tag=None, owner=None):
+  config_data = misc.load_json(os.path.join(exe_path, 'default.json'))
 
   config_data.update(default_config)
   
-  json_data = misc.load_json(os.path.join(os.path.dirname(options_path), 'config.json'))
+  json_data = misc.load_json(os.path.join(exe_path, 'config.json'))
+
   if owner in json_data["subdomains"].keys():
     if branch in json_data["subdomains"][owner].keys():
       config_data.update(json_data["subdomains"][owner][branch])
@@ -56,7 +57,7 @@ def switch_active_version(branch, version, path=None):
   else:
     subprocess.run(f"sps-client application update --name {branch} -f {path}")
 
-def set_new_version(branch, version, container_tag=None, resetting=False, path=options_path, owner="test"):
+def set_new_version(branch, version, owner=None, container_tag=None, resetting=False, path=options_path):
     existingVersions = misc.get_versions(branch)
     if existingVersions and version in existingVersions:
       switch_active_version(branch, version)
@@ -79,14 +80,14 @@ def set_new_version(branch, version, container_tag=None, resetting=False, path=o
           "containerTag": container_tag
         },
         "credentials": {
-          "registry": "https://index.docker.io/v1/",
+          "registry": env_values['IMAGE_REGISTRY'],
           "username": env_values['REGISTRY_USERNAME'],
           "password": env_values['REGISTRY_PASSWORD']
         }
       }
     }
 
-    tmp, temp_file, json_data = generate_config_file(branch, default_config, container_tag)
+    tmp, temp_file, json_data = generate_config_file(branch, default_config, container_tag, owner=owner)
 
     command = f'sps-client version create -a {branch} --name {version} -f {temp_file}'
     count = 1
@@ -110,7 +111,7 @@ def set_new_version(branch, version, container_tag=None, resetting=False, path=o
       "activeVersion": version
     })
 
-    tmp2, temp_file_2, _ = generate_config_file(branch, json_data, container_tag=container_tag)
+    tmp2, temp_file_2, _ = generate_config_file(branch, json_data, container_tag=container_tag, owner=owner)
     switch_active_version(branch, version, path=temp_file_2)
 
     os.remove(tmp)
@@ -118,23 +119,23 @@ def set_new_version(branch, version, container_tag=None, resetting=False, path=o
     os.remove(temp_file)
     os.remove(temp_file_2)
 
-def reset_app_version(branch, path=options_path):
+def reset_app_version(branch, path=options_path, owner=None):
     exists, data = misc.try_get_application(branch)
     if exists:
       if data['response']['activeVersion']:
         version = data['response']['activeVersion']
-        set_new_version(branch, version, resetting=True, path=path)
+        set_new_version(branch, version, resetting=True, path=path, owner=owner)
 
-def make_new_application(branch, version, tag=None, wait=True):
+def make_new_application(branch, version, tag=None, wait=True, owner=None):
     sys.stdout.write("Creating application")
     if wait == True:
       print_dots(25)
     else:
       print_dots(3)
     subprocess.run(f"sps-client application create --name {branch}")
-    set_new_version(branch, version, container_tag=tag)
+    set_new_version(branch, version, container_tag=tag, owner=owner)
 
-def reset_application(branch, version=None, image_tag=None):
+def reset_application(branch, version=None, image_tag=None, owner=None):
     exists, data = misc.try_get_application(branch)
     ctag = None
 
@@ -162,7 +163,7 @@ def reset_application(branch, version=None, image_tag=None):
 
     if not version:
       version = image_tag.split(':')[1].lower().replace('_', '-')
-    make_new_application(branch, version, ctag)
+    make_new_application(branch, version, tag=ctag, owner=owner)
 
     sys.stdout.write("Finishing up")
     print_dots(6)
@@ -253,38 +254,6 @@ ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_Template{fold
     os.system(f"docker build -t {env_values['REGISTRY_USERNAME']}/{image_tag} ..")
     os.system(f"docker push {env_values['REGISTRY_USERNAME']}/{image_tag}")
 
-def build_docker_image_for_server(branch, image_tag):
-  Dockerfile = f"""
-FROM adamrehn/ue4-runtime:20.04-cudagl11.1.1
-
-# Install our additional packages
-USER root
-
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
-RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt \
-    apt-get update && apt-get -y upgrade && \
-    apt-get install -y --no-install-recommends \
-        libsecret-1-0 \
-        libgtk2.0-0:i386 \
-        libsm6:i386
-
-USER ue4
-
-# Copy the packaged project files from the build context
-COPY --chown=ue4:ue4 ./LinuxServer /home/project/LinuxServer
-
-# Ensure the project's startup script is executable
-RUN chmod +x "/home/project/LinuxServer/ThirdTurn_TemplateServer.sh"
-
-
-    """
-
-  with open("Dockerfile", "w") as f:
-    f.write(Dockerfile)
-    
-  os.system(f"docker build -t {env_values['REGISTRY_USERNAME']}/{image_tag} .")
-  os.system(f"docker push {env_values['REGISTRY_USERNAME']}/{image_tag}")
-
 def starts_with_single_hyphen(s):
     return s.startswith('-') and not s.startswith('--')
 
@@ -323,7 +292,7 @@ def deploy(argv):
         "--avm",
         "--add-volume-mount",
         "--firebase",
-        "--version-name"
+        "--version-name",
         "--owner"
     ]
 
@@ -457,9 +426,9 @@ def deploy(argv):
         # Set a new version if this version doesn't already exist
         if exists:
             print(f'making version: {version}')
-            set_new_version(branch, version, resetting=reset_version, path=os.path.join("..", options_path))
+            set_new_version(branch, version, resetting=reset_version, path=os.path.join("..", options_path), owner=owner)
         else:
-            make_new_application(branch, version, wait=False)
+            make_new_application(branch, version, wait=False, owner=owner)
             if app_only:
               sys.stdout.write("Finishing up")
               print_dots(6)

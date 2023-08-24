@@ -75,7 +75,7 @@ usage: sps-app config [options...]\n\n\
 --coreweave-namespace  Get or set the coreweave namespace\n\
 --server-name          Get or set the name of the REST API server\n\
 --region               Get or set the region\n\
---fetch-new-key        Fetches the latest API key\n\
+--fetch-api-key        Fetches the latest API key\n\
 \
 \n\
 Example: sps-app config --fetch-api-key\n\

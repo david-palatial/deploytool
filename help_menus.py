@@ -64,20 +64,22 @@ usage: sps-app shell\n\n\
 Example: sps-app shell")
 
 def show_config_help():
-  print("Configuration for the SPS server\n\n\
-usage: sps-app config [command]\n\n\
-update   Configure sps-client with the new SPS REST API key (Uses LGA1 region by default)\n\
-   -p, --key, --access-key, --password    Provide the API key manually\n\
-       --auto                             Fetches the API key and updates sps-client automatically\n\
-       --lga                              Uses the LGA1 region\n\
-       --ord                              Uses the ORD1 region\n\
-       --las                              Uses the LAS1 region\n\
-get-key  Get the API key for the SPS server\n\
+  print("Configuration options for sps-app\n\n\
+usage: sps-app config [options...]\n\n\
+--api-key              Get or set the API key for the REST API server\n\
+--registry-username    Get or set the image registry username\n\
+--registry-password    Get or set the image registry password\n\
+--registry-url         Get or set the base domain for the image repository\n\
+--coreweave-namespace  Get or set the coreweave namespace\n\
+--server-name          Get or set the name of the REST API server\n\
+--region               Get or set the region\n\
+--fetch-new-key        Fetches the latest API key\n\
+\
 \n\
-Example: sps-app config update --auto\n\
-Example: sps-app config update --access-key ez2UroRWSJpEkahedev80neMGOGrDo6U\n\
-Example: sps-app config get-key\n\
-output: ez2UroRWSJpEkahedev80neMGOGrDo6U")
+Example: sps-app config --fetch-api-key\n\
+Example: sps-app config --registry-username dgodfrey206 --registry-password thepassword --server-name palatial-sps-server\n\
+Example: sps-app config --api-key\n\
+Example output: ez2UroRWSJpEkahedev80neMGOGrDo6U")
 
 def show_Restart_Webpage_help():
   print("Restarts the webserver for the specified branch\n\n\

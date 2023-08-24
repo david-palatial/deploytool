@@ -1,25 +1,20 @@
 import sys
 import subprocess
 import os
-import argparse
 import json
 import re
 import shutil
-import paramiko
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 import misc
 import help_menus
 import deployhelpers
-import shlex
+from dotenv import dotenv_values
+import getpass
 
-# Get the full path of the executable file
-exe_path = os.path.abspath(__file__)
-
-# Construct the full path of the "options.json" file
-options_path = os.path.join(os.path.dirname(exe_path), "options.json")
-persistent_volume_path = os.path.join(os.path.dirname(exe_path), "pvc.json")
-config_file = os.path.join(os.path.dirname(exe_path), "dist", "config")
+exe_path = misc.get_exe_directory()
+env_values = dotenv_values(os.path.join(exe_path, ".env"))
+env_path = os.path.join(exe_path, ".env")
 
 def copy_config_to_kube():
   # Check if the config file exists
@@ -80,9 +75,12 @@ def generate_ssh_key_pair():
 
     # Check if the key pair already exists
     if os.path.isfile(private_key_path) and os.path.isfile(public_key_path):
-        print("SSH key pair already exists.")
+        print("SSH key pair already exists. Skipping generation...\n")
+        print("Send this public key to David: ")
+        with open(public_key_path, "r") as f:
+          print(f.read())
         return
-
+ 
     # Generate a new key pair
     from cryptography.hazmat.primitives.asymmetric import rsa
 
@@ -126,6 +124,24 @@ def is_kubectl_installed():
 def delete_application(branch):
   print(f"Delete {branch}...")
   subprocess.run(f'sps-client application delete --name {branch}')
+
+def reload_env_file(env_path, values):
+  with open(env_path, 'w') as f:
+    for k, v in values.items():
+      f.write(f"{k}={v}\n")
+
+def process_config_argument(args, opt, envVar, i, len):
+  if args[i] == opt:
+    if i + 1 >= len:
+      if i == 0:
+        print(env_values[envVar])
+        sys.exit(0)
+    else:
+      if args[i+1].startswith("-"):
+        print(f"error: {opt} used without an argument")
+        sys.exit(0)
+      else:
+        env_values[envVar] = args[i+1]
 
 if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update" and sys.argv[1] != "delete" and sys.argv[1] != "create" and sys.argv[1] != "restart-server" and sys.argv[1] != "shell" and sys.argv[1] != "config" and sys.argv[1] != "setup" and sys.argv[1] != "restart-webpage" and sys.argv[1] != "restart" and sys.argv[1] != "version-info":
   help_menus.show_spsApp_help()
@@ -178,6 +194,7 @@ elif command == "delete":
   subprocess.run(f'ssh -v {misc.host} ./link-deployment/util/cleanup.sh {branches}')
 
 elif command == "create":
+  sys.exit(0)
   if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":
     help_menus.show_create_help()
     sys.exit(0)
@@ -223,7 +240,7 @@ elif command == "create":
       tag = tag.split(':')[1]
 
     version = tag if version == None else version
-    deployhelpers.set_new_version(branch, version, f'docker.io/dgodfrey206/{repo}:{tag}')
+    deployhelpers.set_new_version(branch, version, f'{env_values["REGISTRY_URL"]}{repo}:{tag}')
 
     data = { "uploader": { "sourceDirectory": "n/a" } }
     misc.save_version_info(branch, data, client=True)
@@ -281,56 +298,77 @@ elif command == "config":
     help_menus.show_config_help()
     sys.exit(0)
 
-  if sys.argv[2] == "update":
-    region = "lga1"
-    if len(sys.argv) < 4:
-      help_menus.show_config_help()
-      sys.exit(0)
-    if sys.argv[3] == "--password" or sys.argv[3] == "-p" or sys.argv[3] == "--access-key" or sys.argv[3] == "--key" or sys.argv[3] == "--auto":
-      key = None
-      r = None
-      if sys.argv[3] == "--auto":
-        key = GetKey()
-        if len(sys.argv) == 5:
-          r = sys.argv[4]
-      else:
-        key = sys.argv[4]
-
-      if len(sys.argv) == 6:
-        r = sys.argv[5]
-      if r == "--lga":
-        region = "lga1"
-      elif r == "--ord":
-        region = "ord1"
-      elif r == "--las":
-        region = "las1"
-      if key == None:
-        print("--auto requires 'sps-app setup' first")
-        sys.exit(1)
-      subprocess.run("sps-client config delete --name palatial-sps-server")
-      subprocess.run(f"sps-client config add --name palatial-sps-server --address \"https://api.tenant-palatial-platform.{region}.ingress.coreweave.cloud\" --access-key " + key)
-      subprocess.run("sps-client config set-default --name palatial-sps-server")
-      
-  elif sys.argv[2] == "get-key":
-    key = GetKey()
-    if key == None:
-      print("Unable to access REST API server")
+  if sys.argv[2] == "--fetch-new-key":
+    key = env_values['API_KEY'] = GetKey()
+    if not key:
+      print("error: could not fetch key. copy the API key from https://apps.coreweave.com/#/c/default/ns/{env_values['COREWEAVE_NAMESPACE']}/apps/helm.packages/v1alpha1/{env_values['SPS_REST_API_SERVER']} and paste it into 'sps-app config --api-key <key>' instead")
     else:
       print(key)
   else:
-    help_menus.show_config_help()
-    sys.exit(0)
+    args = sys.argv[2:]
+    for i in range(0, len(args)):
+      process_config_argument(args, "--api-key",             'API_KEY',             i, len(args))
+      process_config_argument(args, "--registry-username",   'REGISTRY_USERNAME',   i, len(args))
+      process_config_argument(args, "--registry-password",   'REGISTRY_PASSWORD',   i, len(args))
+      process_config_argument(args, "--coreweave-namespace", 'COREWEAVE_NAMESPACE', i, len(args))
+      process_config_argument(args, "--region",              'REGION',              i, len(args))
+      process_config_argument(args, "--server-name",         'SPS_REST_API_SERVER', i, len(args))
+      process_config_argument(args, "--registry-url",        'REGISTRY_URL',        i, len(args))
+      process_config_argument(args, "--image-registry",      'IMAGE_REGISTRY',      i, len(args))
+      process_config_argument(args, "--api-key",             'API_KEY',             i, len(args))
+
+    reload_env_file(env_path, env_values)
+
+    sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
+
+    subprocess.run(f"sps-client config delete --name {env_values['SPS_REST_API_SERVER']}")
+    subprocess.run(f"sps-client config add --name {env_values['SPS_REST_API_SERVER']} --address {sps_rest_api_address} --access-key " + env_values['API_KEY'])
+    subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
+      
 elif command == "setup":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_setup_help()
     sys.exit(0)
-  subprocess.run("image-builder auth --username dgodfrey206 --password applesauce --registry 'https://index.docker.io/v1/'")
+
+  server = input(f"Server name [{env_values['SPS_REST_API_SERVER']}]: ")
+  username = input(f"Image registry username [{env_values['REGISTRY_USERNAME']}]: ")
+  password = getpass.getpass(f"Image registry password [Enter for default]: ")
+  region = input(f"Region [{env_values['REGION']}]: ")
+  namespace = input(f"Coreweave namespace [{env_values['COREWEAVE_NAMESPACE']}]: ")
+  key = input(f"API Key [{env_values['API_KEY']}]: ")
+
+  if server:
+    env_values['SPS_REST_API_SERVER'] = server
+  if username:
+    env_values['REGISTRY_USERNAME'] = username
+  if password:
+    env_values['REGISTRY_PASSWORD'] = password
+  if namespace:
+    env_values['COREWEAVE_NAMESPACE'] = namespace
+  if region:
+    env_values['REGION'] = region
+  if key:
+    env_values['API_KEY'] = key
+
+  reload_env_file(env_path, env_values)
+
+  sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
+
+  subprocess.run(f"image-builder auth --username {env_values['REGISTRY_USERNAME']} --password {env_values['REGISTRY_PASSWORD']} --registry {env_values['IMAGE_REGISTRY']}")
+
   #if GetKey() == None:
   #  download_kubectl()
   #  copy_config_to_kube()
-  print("\nCopy the API key from https://apps.coreweave.com/#/c/default/ns/tenant-palatial-platform/apps/helm.packages/v1alpha1/palatial-sps-server and paste it below\n")
-  key = input("API Key: ")
-  subprocess.run("sps-client config add --name palatial-sps-server --address \"https://api.tenant-palatial-platform.lga1.ingress.coreweave.cloud\" --access-key " + key)
+
+  output = subprocess.run(f"sps-client config add --name {env_values['SPS_REST_API_SERVER']} --address {sps_rest_api_address} --access-key " + env_values['API_KEY'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+  result = output.stdout
+  if output.stderr:
+    result = output.stderr[len("Error: "):]
+
+  print(result.decode('utf-8'))
+  
+  subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
   generate_ssh_key_pair()
 elif command == "restart-webpage":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):

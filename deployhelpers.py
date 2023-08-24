@@ -19,22 +19,19 @@ import help_menus
 from datetime import datetime
 import tempfile
 import shutil
+from dotenv import dotenv_values
 
-# Get the full path of the executable file
-exe_path = os.path.abspath(__file__)
-
-# Construct the full path of the "options.json" file
-options_path = os.path.join(os.path.dirname(exe_path), "options.json")
-persistent_volume_path = os.path.join(os.path.dirname(exe_path), "pvc.json")
-docker_dep_path = os.path.join(os.path.dirname(exe_path), "docker_dep.txt")
-docker_sps_path = os.path.join(os.path.dirname(exe_path), "docker_sps.txt")
+exe_path = misc.get_exe_directory()
+env_values = dotenv_values(os.path.join(exe_path, ".env"))
+env_path = os.path.join(exe_path, ".env")
+options_path = os.path.join(exe_path, "configuration", "config.json")
 
 def generate_config_file(branch, default_config, container_tag=None, owner="test"):
-  config_data = misc.load_json(r'C:\Users\employee\Desktop\deploytool\configuration\default.json')
+  config_data = misc.load_json(os.path.join(os.path.dirname(options_path), 'default.json'))
 
   config_data.update(default_config)
-    
-  json_data = misc.load_json(r'C:\Users\employee\Desktop\deploytool\configuration\config.json')
+  
+  json_data = misc.load_json(os.path.join(os.path.dirname(options_path), 'config.json'))
   if owner in json_data.keys():
     if branch in json_data[owner].keys():
       config_data.update(json_data[owner][branch])
@@ -65,7 +62,7 @@ def set_new_version(branch, version, container_tag=None, resetting=False, path=o
       #print(f"error: version {version} already exists. can't create")
       #sys.exit(1)
     if container_tag == None:
-      container_tag = f"docker.io/dgodfrey206/{branch}:{version}"
+      container_tag = f"{env_values['REGISTRY_URL']}{branch}:{version}"
     if resetting == True:
         print("Deleting version...")
         subprocess.run(f"sps-client version delete --name {version} --application {branch}")
@@ -81,8 +78,8 @@ def set_new_version(branch, version, container_tag=None, resetting=False, path=o
         },
         "credentials": {
           "registry": "https://index.docker.io/v1/",
-          "username": "dgodfrey206",
-          "password": "applesauce"
+          "username": env_values['REGISTRY_USERNAME'],
+          "password": env_values['REGISTRY_PASSWORD']
         }
       }
     }
@@ -214,9 +211,9 @@ def build_docker_image(branch, image_tag):
         sys.exit(1)
 
     client.login(
-        username="dgodfrey206",
-        password="applesauce",
-        registry="https://index.docker.io/v1/",
+        username=env_values['REGISTRY_USERNAME'],
+        password=env_values['REGISTRY_PASSWORD'],
+        registry=env_values['IMAGE_REGISTRY'],
     )
 
     Dockerfile = f"""
@@ -251,8 +248,8 @@ ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_Template{fold
     with open("../Dockerfile", "w") as f:
         f.write(Dockerfile)
     
-    os.system(f"docker build -t dgodfrey206/{image_tag} ..")
-    os.system(f"docker push dgodfrey206/{image_tag}")
+    os.system(f"docker build -t {env_values['REGISTRY_USERNAME']}/{image_tag} ..")
+    os.system(f"docker push {env_values['REGISTRY_USERNAME']}/{image_tag}")
 
 def build_docker_image_for_server(branch, image_tag):
   Dockerfile = f"""
@@ -283,8 +280,8 @@ RUN chmod +x "/home/project/LinuxServer/ThirdTurn_TemplateServer.sh"
   with open("Dockerfile", "w") as f:
     f.write(Dockerfile)
     
-  os.system(f"docker build -t dgodfrey206/{image_tag} .")
-  os.system(f"docker push dgodfrey206/{image_tag}")
+  os.system(f"docker build -t {env_values['REGISTRY_USERNAME']}/{image_tag} .")
+  os.system(f"docker push {env_values['REGISTRY_USERNAME']}/{image_tag}")
 
 def starts_with_single_hyphen(s):
     return s.startswith('-') and not s.startswith('--')
@@ -448,7 +445,7 @@ def deploy(argv):
             opt = ""
             if os.path.exists(os.path.join(".temp", "result.json")):
               opt = "--skip-building"
-            subprocess.run(f'image-builder create --package . --tag docker.io/dgodfrey206/{image_tag} {opt}')
+            subprocess.run(f'image-builder create --package . --tag {env_values["REGISTRY_URL"]}{image_tag} {opt}')
 
         if image_only:
           print("FINISHED")

@@ -66,6 +66,18 @@ def increment_version(version_string):
         # If the input string doesn't match the pattern, return version_string
         return version_string
 
+def get_exe_directory():
+  if getattr(sys, 'frozen', False):  # Check if the script is running as a frozen executable
+    # When running as a frozen executable, sys.executable points to the executable file itself
+    exe_path = os.path.dirname(sys.executable)
+  else:
+    # When running as a script, use the path of the script
+    exe_path = os.path.abspath(__file__)
+
+  # Get the directory of the executable
+  exe_directory = os.path.dirname(exe_path)
+  return exe_directory
+
 def load_json(file_path):
   with open(file_path, "r") as f:
     json_data = f.read()

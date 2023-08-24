@@ -217,13 +217,13 @@ def save_version_info(branch, data={}, client=True):
             timeLastUpdated = versions[i]["timeLastUpdated"]
 
   if client:
-    subprocess.run(f'ssh -v {host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/client', stdout=subprocess.PIPE)
-    versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/client/{version}_{current_datetime.strftime("%Y%m%d-%H_%M_%S")}.log'
-    activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log'
+    subprocess.run(f'ssh -v {host} sudo mkdir -p /var/log/cs-app-logs/{branch}/client', stdout=subprocess.PIPE)
+    versionInfoAddress = f'/var/log/cs-app-logs/{branch}/client/{version}_{current_datetime.strftime("%Y%m%d-%H_%M_%S")}.log'
+    activeVersionAddress = f'/var/log/cs-app-logs/{branch}/client/activeVersion.log'
   else:
-    subprocess.run(f'ssh -v {host} sudo mkdir -p /usr/local/bin/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
-    versionInfoAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/{version}_{date}.log'
-    activeVersionAddress = f'/usr/local/bin/cw-app-logs/{branch}/server/activeVersion.log'
+    subprocess.run(f'ssh -v {host} sudo mkdir -p /var/log/cs-app-logs/{branch}/server', stdout=subprocess.PIPE)
+    versionInfoAddress = f'/var/log/cs-app-logs/{branch}/server/{version}_{date}.log'
+    activeVersionAddress = f'/var/log/cs-app-logs/{branch}/server/activeVersion.log'
 
   info = {
     "branch": branch,

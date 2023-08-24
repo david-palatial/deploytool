@@ -143,7 +143,7 @@ def process_config_argument(args, opt, envVar, i, len):
       else:
         env_values[envVar] = args[i+1]
 
-if len(sys.argv) < 2 or sys.argv[1] != "deploy" and sys.argv[1] != "reset" and sys.argv[1] != "update" and sys.argv[1] != "delete" and sys.argv[1] != "create" and sys.argv[1] != "restart-server" and sys.argv[1] != "shell" and sys.argv[1] != "config" and sys.argv[1] != "setup" and sys.argv[1] != "restart-webpage" and sys.argv[1] != "restart" and sys.argv[1] != "version-info":
+if len(sys.argv) < 2 or sys.argv[1] not in ["deploy", "reset", "update", "delete", "create", "restart-server", "shell", "config", "setup", "restart-webpage", "restart", "version-info"]:
   help_menus.show_spsApp_help()
   sys.exit(1)
 
@@ -190,11 +190,16 @@ elif command == "delete":
     help_menus.show_delete_help()
     sys.exit(0)
 
+  if len(sys.argv) > 3 and sys.argv[-1] in ["-a", "--app-only", "-c", "--client-only"]:
+    apps = sys.argv[2:len(sys.argv)-1]
+    for i in range(0, len(apps)):
+      delete_application(apps[i])
+    sys.exit(0)
+
   branches = ' '.join(sys.argv[2:])
   subprocess.run(f'ssh -v {misc.host} ./link-deployment/util/cleanup.sh {branches}')
 
 elif command == "create":
-  sys.exit(0)
   if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":
     help_menus.show_create_help()
     sys.exit(0)

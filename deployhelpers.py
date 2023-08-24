@@ -32,11 +32,13 @@ def generate_config_file(branch, default_config, container_tag=None, owner="test
   config_data.update(default_config)
   
   json_data = misc.load_json(os.path.join(os.path.dirname(options_path), 'config.json'))
-  if owner in json_data.keys():
-    if branch in json_data[owner].keys():
-      config_data.update(json_data[owner][branch])
-    elif "default" in json_data[owner].keys():
-      config_data.update(json_data[owner]["default"])
+  if owner in json_data["subdomains"].keys():
+    if branch in json_data["subdomains"][owner].keys():
+      config_data.update(json_data["subdomains"][owner][branch])
+    elif "default" in json_data["subdomains"][owner].keys():
+      config_data.update(json_data["subdomains"][owner]["default"])
+  elif branch in json_data["applications"].keys():
+    config_data.update(json_data["applications"][branch])
 
   tmp = tempfile.mktemp()
   with open(tmp, 'w') as f:

@@ -416,9 +416,11 @@ def deploy(argv):
             build_docker_image(branch, image_tag)
         else:
             opt = ""
+            
             if os.path.exists(os.path.join(".temp", "result.json")):
               opt = "--skip-building"
             subprocess.run(f'image-builder create --package . --tag {env_values["REPOSITORY_URL"]}{image_tag} {opt}')
+            sys.exit(0)
 
         if image_only:
           print("FINISHED")

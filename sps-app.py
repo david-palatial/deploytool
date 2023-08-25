@@ -244,7 +244,12 @@ elif command == "create":
       repo = tag.split(':')[0]
       tag = tag.split(':')[1]
 
-    version = tag if version == None else version
+    if version == None:
+      highestVersion = misc.get_highest_version(misc.get_versions(branch))
+      if highestVersion == None:
+        version = "v0-0-1"
+      else:
+        version = misc.increment_version(highestVersion)
 
     deployhelpers.set_new_version(branch, version, container_tag=f'{env_values["REPOSITORY_URL"]}{repo}:{tag}')
 

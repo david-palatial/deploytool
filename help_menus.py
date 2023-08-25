@@ -69,7 +69,7 @@ def show_config_help():
   print("Configuration options for sps-app\n\n\
 usage: sps-app config [options...]\n\n\
 --api-key              Get or set the API key for the REST API server\n\
---registry-username  Get or set the image registry username\n\
+--registry-username    Get or set the image registry username\n\
 --registry-password    Get or set the image registry password\n\
 --repository-url       Get or set the base domain for the image repository\n\
 --coreweave-namespace  Get or set the coreweave namespace\n\

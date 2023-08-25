@@ -379,8 +379,8 @@ elif command == "version-info":
   if not "activeVersion" in data["response"]:
     print("No active version info for this application")
   else:
-    remote_client_path = f'/usr/local/bin/cw-app-logs/{branch}/client/activeVersion.log'
-    remote_server_path = f'/usr/local/bin/cw-app-logs/{branch}/server/activeVersion.log'
+    remote_client_path = f'/var/log/cs-app-logs/{branch}/client/activeVersion.log'
+    remote_server_path = f'/var/log/cs-app-logs/{branch}/server/activeVersion.log'
     if misc.file_exists_on_remote(misc.host, remote_client_path):
       print("Client info:")
       result = subprocess.run(f'ssh -v {misc.host} cat {remote_client_path}', stdout=subprocess.PIPE, stderr=subprocess.PIPE)

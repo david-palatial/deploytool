@@ -326,7 +326,12 @@ elif command == "config":
 
     sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
 
-    subprocess.run(f"sps-client config delete --name {env_values['SPS_REST_API_SERVER']}")
+    output = subprocess.run(f"sps-client config delete --name {env_values['SPS_REST_API_SERVER']}", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    result = output.stdout
+    if output.stderr and "already exists" in output.stderr.decode('utf-8'):
+      result = output.stderr[len("Error: "):]
+
+    print(result.decode('utf-8'))
     subprocess.run(f"sps-client config add --name {env_values['SPS_REST_API_SERVER']} --address {sps_rest_api_address} --access-key " + env_values['API_KEY'])
     subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
       
@@ -335,40 +340,22 @@ elif command == "setup":
     help_menus.show_setup_help()
     sys.exit(0)
 
-  server = input(f"Server name [{env_values['SPS_REST_API_SERVER']}]: ")
-  username = input(f"Image registry username [{env_values['REGISTRY_USERNAME']}]: ")
-  password = getpass.getpass(f"Image registry password [Enter for default]: ")
-  region = input(f"Region [{env_values['REGION']}]: ")
-  namespace = input(f"Coreweave namespace [{env_values['COREWEAVE_NAMESPACE']}]: ")
-  key = input(f"API Key [{env_values['API_KEY']}]: ")
+  key = GetKey()
+  while not key:
+    print("Copy the API key from https://apps.coreweave.com/#/c/default/ns/{env_values['COREWEAVE_NAMESPACE']}/apps/helm.packages/v1alpha1/{env_values['SPS_REST_API_SERVER']} and paste it below")
+    key = input(f"API Key [{env_values['API_KEY']}]: ")
 
-  if server:
-    env_values['SPS_REST_API_SERVER'] = server
-  if username:
-    env_values['REGISTRY_USERNAME'] = username
-  if password:
-    env_values['REGISTRY_PASSWORD'] = password
-  if namespace:
-    env_values['COREWEAVE_NAMESPACE'] = namespace
-  if region:
-    env_values['REGION'] = region
-  if key:
-    env_values['API_KEY'] = key
-
+  env_values['API_KEY'] = key
   reload_env_file(env_path, env_values)
 
   sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
 
   subprocess.run(f"image-builder auth --username {env_values['REGISTRY_USERNAME']} --password {env_values['REGISTRY_PASSWORD']} --registry {env_values['IMAGE_REGISTRY']}")
 
-  #if GetKey() == None:
-  #  download_kubectl()
-  #  copy_config_to_kube()
-
   output = subprocess.run(f"sps-client config add --name {env_values['SPS_REST_API_SERVER']} --address {sps_rest_api_address} --access-key " + env_values['API_KEY'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   result = output.stdout
-  if output.stderr:
+  if output.stderr and "already exists" in output.stderr.decode('utf-8'):
     result = output.stderr[len("Error: "):]
 
   print(result.decode('utf-8'))

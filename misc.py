@@ -14,7 +14,7 @@ import sys
 import time
 from dotenv import dotenv_values
 
-exe_path = misc.get_exe_directory()
+exe_path = get_exe_directory()
 env_values = dotenv_values(os.path.join(exe_path, ".env"))
 host = env_values['HOST']
 

@@ -12,8 +12,11 @@ import tempfile
 import shutil
 import sys
 import time
+from dotenv import dotenv_values
 
-host = 'david@palatial.tenant-palatial-platform.coreweave.cloud'
+exe_path = misc.get_exe_directory()
+env_values = dotenv_values(os.path.join(exe_path, ".env"))
+host = env_values['HOST']
 
 def file_exists_on_remote(host, remote_file_path):
     try:

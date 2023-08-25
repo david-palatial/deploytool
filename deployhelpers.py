@@ -27,17 +27,17 @@ env_path = os.path.join(exe_path, ".env")
 options_path = os.path.join(exe_path, "configuration", "config.json")
 
 def generate_config_file(branch, default_config, container_tag=None, owner=None):
-  config_data = misc.load_json(os.path.join(exe_path, 'default.json'))
+  config_data = misc.load_json(os.path.join(exe_path, "configuration", 'default.json'))
 
   config_data.update(default_config)
   
-  json_data = misc.load_json(os.path.join(exe_path, 'config.json'))
+  json_data = misc.load_json(options_path)
 
-  if owner in json_data["subdomains"].keys():
-    if branch in json_data["subdomains"][owner].keys():
-      config_data.update(json_data["subdomains"][owner][branch])
-    elif "default" in json_data["subdomains"][owner].keys():
-      config_data.update(json_data["subdomains"][owner]["default"])
+  if owner in json_data["domains"].keys():
+    if branch in json_data["domains"][owner].keys():
+      config_data.update(json_data["domains"][owner][branch])
+    elif "default" in json_data["domains"][owner].keys():
+      config_data.update(json_data["domains"][owner]["default"])
   elif branch in json_data["applications"].keys():
     config_data.update(json_data["applications"][branch])
 

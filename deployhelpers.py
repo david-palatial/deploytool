@@ -94,8 +94,9 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
     data = misc.get_sps_json_output(command)
 
     while data["statusCode"] != 200 and count != 3:
-      print(data["statusCode"], data["response"])
-      print("error: " + data["response"])
+      if data["statusCode"] == 422:
+        print("error: " + data["message"])
+        sys.exit(1)
       print("Retrying...")
       subprocess.check_output("timeout 2")
       data = misc.get_sps_json_output(command)

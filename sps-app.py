@@ -240,6 +240,8 @@ elif command == "create":
 
     repo = branch
   
+    print(tag, tag_has_repo(tag))
+    sys.exit(0)
     if tag_has_repo(tag):
       repo = tag.split(':')[0]
       tag = tag.split(':')[1]

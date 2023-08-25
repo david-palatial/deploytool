@@ -1,0 +1,16 @@
+{
+  "subdomains": {
+    "test": {
+      "test": {
+        "turnServer": {
+          "enable": true
+        }
+      }
+    }
+  },
+  "applications": {
+    "foo": {
+      
+    }
+  }
+}

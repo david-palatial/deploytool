@@ -1,0 +1,11 @@
+{
+  "overProvisioning": {
+    "instances": 2
+  },
+  "httpServer": {
+    "enable": false
+  },
+  "turnServer": {
+    "enable": false
+  }
+}

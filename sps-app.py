@@ -240,14 +240,13 @@ elif command == "create":
 
     repo = branch
   
-    print(tag, tag_has_repo(tag))
-    sys.exit(0)
     if tag_has_repo(tag):
       repo = tag.split(':')[0]
       tag = tag.split(':')[1]
 
     version = tag if version == None else version
-    deployhelpers.set_new_version(branch, version, f'{env_values["REPOSITORY_URL"]}{repo}:{tag}')
+
+    deployhelpers.set_new_version(branch, version, container_tag=f'{env_values["REPOSITORY_URL"]}{repo}:{tag}')
 
     data = { "uploader": { "sourceDirectory": "n/a" } }
     misc.save_version_info(branch, data, client=True)

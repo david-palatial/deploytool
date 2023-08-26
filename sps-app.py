@@ -57,7 +57,7 @@ def tag_has_repo(tag):
     return len(parts) == 2 and all(parts)
 
 def reset_server(branch):
-  subprocess.run(f'ssh david@prophet.palatialxr.com "sudo systemctl restart server_{branch}"')
+  subprocess.run(f'ssh {misc.host} "sudo systemctl restart server_{branch}"')
 
 def commandExists(opt, options_list):
   if opt in options_list:
@@ -391,10 +391,10 @@ elif command == "setup":
   subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
   generate_ssh_key_pair()
 elif command == "restart-webpage":
-  if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
+  if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_Restart_Webpage_help()
     sys.exit(0)
-  subprocess.run(f'ssh david@prophet.palatialxr.com "sudo systemctl restart dom_{sys.argv[2]}"')
+  subprocess.run(f'ssh {misc.host} "sudo systemctl restart react-dom"')
 elif command == "version-info":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_Version_Info_help()

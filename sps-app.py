@@ -170,17 +170,39 @@ elif command == "reset" or command == "restart":
   if len(sys.argv) < 3:
     help_menus.show_reset_help()
     sys.exit(1)
-  for elem in sys.argv[2:]:
-    if elem == "-h" or elem == "--help":
-      help_menus.show_reset_help()
-      sys.exit(0)
+
   branch = sys.argv[2]
-  image_tag = None
-  if len(sys.argv) == 5 and (sys.argv[3] == "-t" or sys.argv[3] == "--tag"):
-    tag = sys.argv[4]
-    if not tag_has_repo(tag):
-      image_tag = f"{branch}:{tag}"
-  deployhelpers.reset_application(branch, image_tag=image_tag)
+  container_tag = None
+  version = None
+
+  if len(sys.argv) > 3:
+    args = sys.argv[3:]
+    tag = None
+    version = None
+    for i in range(0, len(args)):
+      if args[i] == "-t" or args[i] == "--tag":
+        if i + 1 >= len(args):
+          print(f"error: {args[i]} requires an argument")
+          sys.exit(1)
+        tag = args[i+1]
+      elif args[i] == "--vn" or args[i] == "--version-name":
+        if i + 1 >= len(args):
+          print(f"error: {args[i]} requires an argument")
+          sys.exit(1)
+        version = args[i+1]
+      elif args[i] == "-h" or args[i] == "--help":
+        help_menus.show_reset_help()
+        sys.exit(0)
+
+    repo = branch
+  
+    if tag_has_repo(tag):
+      repo = tag.split(':')[0]
+      tag = tag.split(':')[1]
+
+    container_tag = f'{env_values["REPOSITORY_URL"]}{repo}:{tag}'
+
+  deployhelpers.reset_application(branch, version=version, container_tag=container_tag)
 
   data = { "uploader": { "sourceDirectory": "n/a" } }
   misc.save_version_info(branch, data, client=True)

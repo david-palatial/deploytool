@@ -137,35 +137,33 @@ def make_new_application(branch, version, tag=None, wait=True, owner=None):
     subprocess.run(f"sps-client application create --name {branch}")
     set_new_version(branch, version, container_tag=tag, owner=owner)
 
-def reset_application(branch, version=None, image_tag=None, owner=None):
+def reset_application(branch, version=None, container_tag=None, owner=None):
     exists, data = misc.try_get_application(branch)
-    ctag = None
 
     if not exists:
       print(f"error: app '{branch}' does not exist.")
       sys.exit(1)
 
-    # If an image tag is not supplied we look for the active version info to do a reset
-    if not image_tag:
-        if not "activeVersion" in data["response"]:
-            print(f"error: app '{branch}' has no set version. can't reset")
-            sys.exit(1)
+    if not "activeVersion" in data["response"]:
+      print(f"error: app '{branch}' has no set version. can't reset")
+      sys.exit(1)
 
-        activeVersion = data["response"]["activeVersion"].lower().replace('_', '-').replace('.', '-')
-        if image_tag == None:
-            versions = misc.get_version_objects(branch)
-            for v in range(0, len(versions)):
-                if versions[v]["name"] == activeVersion:
-                    ctag = versions[v]["buildOptions"]["input"]["containerTag"]
-                    image_tag = ctag.split('/')[-1]
-                    break
+    activeVersion = data["response"]["activeVersion"]
+    if not version:
+      version = activeVersion
+
+    # If an image tag is not supplied we look for the active version info to do a reset
+    if not container_tag:
+      versions = data["response"]["versions"]
+      for v in range(0, len(versions)):
+        if versions[v]["name"] == activeVersion:
+          container_tag = versions[v]["buildOptions"]["input"]["containerTag"]
+          break
 
     print(f"Delete {branch}...")
     subprocess.run(f"sps-client application delete --name {branch}")
 
-    if not version:
-      version = image_tag.split(':')[1].lower().replace('_', '-')
-    make_new_application(branch, version, tag=ctag, owner=owner)
+    make_new_application(branch, version, tag=container_tag, owner=owner)
 
     sys.stdout.write("Finishing up")
     print_dots(6)

@@ -138,36 +138,36 @@ def make_new_application(branch, version, tag=None, wait=True, owner=None):
     set_new_version(branch, version, container_tag=tag, owner=owner)
 
 def reset_application(branch, version=None, container_tag=None, owner=None):
-    exists, data = misc.try_get_application(branch)
+  exists, data = misc.try_get_application(branch)
 
-    if not exists:
-      print(f"error: app '{branch}' does not exist.")
-      sys.exit(1)
+  if not exists:
+    print(f"error: app '{branch}' does not exist.")
+    sys.exit(1)
 
-    if not "activeVersion" in data["response"]:
-      print(f"error: app '{branch}' has no set version. can't reset")
-      sys.exit(1)
+  if not "activeVersion" in data["response"]:
+    print(f"error: app '{branch}' has no set version. can't reset")
+    sys.exit(1)
 
-    activeVersion = data["response"]["activeVersion"]
-    if not version:
-      version = activeVersion
+  activeVersion = data["response"]["activeVersion"]
+  if not version:
+    version = activeVersion
 
-    # If an image tag is not supplied we look for the active version info to do a reset
-    if not container_tag:
-      versions = data["response"]["versions"]
-      for v in range(0, len(versions)):
-        if versions[v]["name"] == activeVersion:
-          container_tag = versions[v]["buildOptions"]["input"]["containerTag"]
-          break
+  # If an image tag is not supplied we look for the active version info to do a reset
+  if not container_tag:
+    versions = data["response"]["versions"]
+    for v in range(0, len(versions)):
+      if versions[v]["name"] == activeVersion:
+        container_tag = versions[v]["buildOptions"]["input"]["containerTag"]
+        break
 
-    print(f"Delete {branch}...")
-    subprocess.run(f"sps-client application delete --name {branch}")
+  print(f"Delete {branch}...")
+  subprocess.run(f"sps-client application delete --name {branch}")
 
-    make_new_application(branch, version, tag=container_tag, owner=owner)
+  make_new_application(branch, version, tag=container_tag, owner=owner)
 
-    sys.stdout.write("Finishing up")
-    print_dots(6)
-    print("FINISHED")
+  sys.stdout.write("Finishing up")
+  print_dots(6)
+  print("FINISHED")
 
 def print_dots(duration):
     q = queue.Queue()

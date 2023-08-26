@@ -213,7 +213,10 @@ elif command == "delete":
     help_menus.show_delete_help()
     sys.exit(0)
 
-  if len(sys.argv) > 3 and sys.argv[-1] in ["-a", "--app-only", "-c", "--client-only"]:
+  if len(sys.argv) == 4:
+    if not sys.argv[3].lower() in ["-a", "--app-only", "-c", "--client-only"]:
+      print(f"error: unknown option {sys.argv[3]}")
+      sys.exit(1)
     apps = sys.argv[2:len(sys.argv)-1]
     for i in range(0, len(apps)):
       delete_application(apps[i])

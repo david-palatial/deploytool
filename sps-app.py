@@ -223,7 +223,7 @@ elif command == "delete":
     sys.exit(0)
 
   branches = ' '.join(sys.argv[2:])
-  subprocess.run(f'ssh -v {misc.host} ./link-deployment/util/cleanup.sh {branches}')
+  subprocess.run(f'ssh {misc.host} ./link-deployment/util/cleanup.sh {branches}')
 
 elif command == "create":
   if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":

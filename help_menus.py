@@ -2,15 +2,17 @@ def show_spsApp_help():
   print("usage: sps-app [command] [options]\n\
 deploy          Deploy a new build\n\
 reset, restart  Reset an application\n\
-update          Change settings for an application\n\
+update          Change application settings\n\
 create          Create an application\n\
 delete          Delete an application\n\
 shell           Open a shell to the VM\n\
-config          Set the SPS server\n\
+config          Configure sps-app\n\
 setup           Set up sps-app\n\
 version-info    Display active version info\n\
 restart-server  Restarts a dedicated server\n\
-restart-webpage Restarts a webpage\n\
+restart-webpage Restarts the webserver\n\
+enable          Activates an application with the latest version\n\
+disable         Removes the active version from an application\n\
 -h, --help      Show help menu\n\n\
 \n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\
@@ -42,6 +44,18 @@ usage: sps-app [reset or restart] <branch> [options...]\n\n\
 -h, --help      Show help menu\n\n\
 Example: sps-app reset demo\n\
 Example: sps-app restart demo --tag v0-0-4 --version-name version4")
+
+def show_enable_help():
+  print("Sets the active version to the latest version\n\n\
+usage: sps-app enable <branch>\n\n\
+-h, --help      Show help menu\n\n\
+Example: sps-app enable oslodemo")
+
+def show_disable_help():
+  print("Removes the active version\n\n\
+usage: sps-app disable <branch> [options...]\n\n\
+-h, --help      Show help menu\n\n\
+Example: sps-app disable oslodemo")
 
 def show_delete_help():
   print("Deletes the application(s) and their associated web servers and dedicated servers\n\n\
@@ -86,8 +100,8 @@ Example: sps-app config --api-key\n\
 Example output: ez2UroRWSJpEkahedev80neMGOGrDo6U")
 
 def show_Restart_Webpage_help():
-  print("Restarts the webserver for the specified branch\n\n\
-usage: sps-app restart-webpage <branch>\n\n\
+  print("Restarts the webserver\n\n\
+usage: sps-app restart-webpage\n\n\
 -h, --help    Show help menu\n\
 \n\
 Example: sps-app restart-webpage tankhouse")
@@ -110,7 +124,7 @@ usage: sps-app restart-server <branch>\n\n\
 Example: sps-app restart-server banyan")
 
 def show_setup_help():
-  print("Sets up Scalable Pixel Streaming command tools, installs kubectl, generates an SSH key and installs the Coreweave Access Token onto the system.\n\n\
+  print("Sets up Scalable Pixel Streaming CLI tools and generates an SSH key pair.\n\n\
 usage: sps-app setup\n\n\
 -h, --help   Show help menu\n\n\
 Example: sps-app setup");

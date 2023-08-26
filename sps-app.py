@@ -11,6 +11,7 @@ import help_menus
 import deployhelpers
 from dotenv import dotenv_values
 import getpass
+from datetime import datetime
 
 exe_path = misc.get_exe_directory()
 env_values = dotenv_values(os.path.join(exe_path, ".env"))
@@ -143,7 +144,7 @@ def process_config_argument(args, opt, envVar, i, len):
       else:
         env_values[envVar] = args[i+1]
 
-if len(sys.argv) < 2 or sys.argv[1] not in ["deploy", "reset", "update", "delete", "create", "restart-server", "shell", "config", "setup", "restart-webpage", "restart", "version-info"]:
+if len(sys.argv) < 2 or sys.argv[1] not in ["deploy", "reset", "update", "delete", "create", "restart-server", "shell", "config", "setup", "restart-webpage", "restart", "version-info", "enable", "disable"]:
   help_menus.show_spsApp_help()
   sys.exit(1)
 
@@ -422,7 +423,42 @@ elif command == "version-info":
       print(result.stdout.decode('utf-8'))
     else:
       print("No version information saved for server")
+elif command == "disable":
+  if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
+    help_menus.show_disable_help()
+    sys.exit(0)
+  app = sys.argv[2]
+  exists, data = misc.try_get_application(app)
+  if not exists:
+    print(f"error: {app} does not exist")
+    sys.exit(1)
 
+  subprocess.run(f"sps-client application update -n {app} --activeVersion \"\"", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+elif command == "enable":
+  if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
+    help_menus.show_enable_help()
+    sys.exit(0)
+  app = sys.argv[2]
+
+  exists, data = misc.try_get_application(app)
+  if not exists:
+    print(f"error: {app} does not exist")
+    sys.exit(1)
+  if "activeVersion" in data["response"]:
+    print(f"error: {app} already has an active version")
+    sys.exit(1)
+
+  versions = misc.get_version_objects(app)
+  time_strings = [ x["timeCreated"] for x in versions ]
+  datetime_objects = [datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S %z %Z") for time_str in time_strings]
+
+  # Find the latest datetime
+  latest_datetime = max(datetime_objects)
+
+  # Get the index of the latest datetime
+  latest_datetime_index = datetime_objects.index(latest_datetime)
+
+  subprocess.run(f'sps-client application update -n {app} --activeVersion {versions[latest_datetime_index]["name"]}', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 else:
   for i in range(1, len(sys.argv)):
     opt = sys.argv[i]

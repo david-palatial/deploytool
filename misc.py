@@ -212,12 +212,11 @@ def save_version_info(branch, data={}, client=True):
     if not version:
       version = dir_name
     else:
-      versions = get_version_objects(branch)
-      if versions:
-        for i in range(0, len(versions)):
-          if versions[i]["name"] == version:
-            timeCreated = versions[i]["timeCreated"]
-            timeLastUpdated = versions[i]["timeLastUpdated"]
+      versions = jsonData["response"]["versions"]
+      for i in range(0, len(versions)):
+        if versions[i]["name"] == version:
+          timeCreated = versions[i]["timeCreated"]
+          timeLastUpdated = versions[i]["timeLastUpdated"]
 
   if client:
     subprocess.run(f'ssh -v {host} sudo mkdir -p /var/log/cw-app-logs/{branch}/client', stdout=subprocess.PIPE)

@@ -24,14 +24,14 @@ from dotenv import dotenv_values
 exe_path = misc.get_exe_directory()
 env_values = dotenv_values(os.path.join(exe_path, ".env"))
 env_path = os.path.join(exe_path, ".env")
-options_path = os.path.join(exe_path, "configuration", "config.json")
+options_path = os.path.join(exe_path, "configuration", "default.json")
 
 def generate_config_file(branch, default_config, container_tag=None, owner=None):
-  config_data = misc.load_json(os.path.join(exe_path, "configuration", 'default.json'))
+  config_data = misc.load_json(options_path)
 
   config_data.update(default_config)
   
-  json_data = misc.load_json(options_path)
+  json_data = misc.load_json(os.path.join(exe_path, "configuration", 'config.json'))
 
   if owner in json_data["domains"].keys():
     if branch in json_data["domains"][owner].keys():
@@ -62,8 +62,6 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
     if existingVersions and version in existingVersions:
       switch_active_version(branch, version)
       return
-      #print(f"error: version {version} already exists. can't create")
-      #sys.exit(1)
     if container_tag == None:
       container_tag = f"{env_values['REPOSITORY_URL']}{branch}:{version}"
     if resetting == True:

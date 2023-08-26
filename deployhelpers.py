@@ -163,7 +163,7 @@ def reset_application(branch, version=None, container_tag=None, owner=None):
   print(f"Delete {branch}...")
   subprocess.run(f"sps-client application delete --name {branch}")
 
-  make_new_application(branch, version, tag=container_tag, owner=owner)
+  make_new_application(branch, version, tag=container_tag, owner=owner, wait=False)
 
   sys.stdout.write("Finishing up")
   print_dots(6)

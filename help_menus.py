@@ -37,10 +37,11 @@ Example: sps-app deploy . -FA --add-volume-mount --config ../settings.json")
 def show_reset_help():
   print("Deletes and recreates the client application\n\n\
 usage: sps-app [reset or restart] <branch> [options...]\n\n\
--t, --tag       The Docker image tag of the version to reset to\n\
+-t, --tag                  The Docker image tag of the version to reset to\n\
+    --vn, --version-name   Optionally provide a name for the new version\n\
 -h, --help      Show help menu\n\n\
 Example: sps-app reset demo\n\
-Example: sps-app restart demo --tag 23-04-20_build-A_CD_PalatialTest")
+Example: sps-app restart demo --tag v0-0-4 --version-name version4")
 
 def show_delete_help():
   print("Deletes the application(s) and their associated web servers and dedicated servers\n\n\

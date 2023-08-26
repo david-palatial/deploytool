@@ -22,16 +22,16 @@ def show_Deploy_help():
     print(
         "Deploys a packaged UE client to the SPS server and/or a packaged UE server to the palatial VM\n\n\
 usage: sps-app deploy <dir> [options...]\n\n\
--A, -C, --app-only, --client-only  Only deploy the client\n\
--S,     --server-only              Only deploy the server\n\
--I,     --image-only               Deploy the image to Docker Hub only\n\
--b,     --branch                   The application branch to deploy to (dev, demo, prophet, etc.)\n\
-        --owner                    Specifies the subdomain to which application belongs\n\
-        --vn, --version-name       Name the version for the application\n\
-        --add-volume-mount         Add a storage volume to the application\n\
--F,     --firebase                 Deploys it with the necessary dependencies for firebase\n\
-        --config                   Path to the JSON configuration file\n\
--h,     --help                     Get help for commands\n\n\
+-A, -C, --app-only, --client-only          Only deploy the client\n\
+-S,     --server-only                      Only deploy the server\n\
+-I,     --image-only                       Deploy only the image to Docker Hub\n\
+-b,     --branch                           The application branch to deploy to (dev, demo, prophet, etc.)\n\
+        --owner                            Specifies the subdomain to which application belongs\n\
+        --vn, --version-name               Name the version for the application\n\
+        --add-volume-mount                 Add a storage volume to the application\n\
+-F,     --custom-docker-build, --firebase  Deploys with custom dependencies\n\
+        --config                           Path to the JSON configuration file\n\
+-h,     --help                             Get help for commands\n\n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\
 Example: sps-app deploy 23-06-13_build-A_CD_OfficeStandalone -b officedemo --server-only\n\
 Example: sps-app deploy . -FA --add-volume-mount --config ../settings.json")

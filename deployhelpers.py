@@ -291,7 +291,8 @@ def deploy(argv):
         "--add-volume-mount",
         "--firebase",
         "--version-name",
-        "--owner"
+        "--owner",
+	"--custom-docker-build"
     ]
 
     single_options = ["-F", "-A", "-C", "-I", "-S"]
@@ -367,7 +368,7 @@ def deploy(argv):
         if opt == "--add-volume-mount":
             options_path = persistent_volume_path
             reset_version = True
-        if opt == "--firebase":
+        if opt == "--firebase" or opt == "--custom-docker-build":
             use_firebase = True
 
     if not os.path.exists(dir_name):

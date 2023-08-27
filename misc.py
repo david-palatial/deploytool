@@ -86,6 +86,12 @@ def load_json(file_path):
     json_data = f.read()
   return json.loads(json_data)
 
+def load_json_content(file_path):
+  with open(file_path, "r") as f:
+     content = f.read()
+
+  return json.loads(content)
+
 def get_sps_json_output(command):
   output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 

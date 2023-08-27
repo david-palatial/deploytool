@@ -417,7 +417,7 @@ def deploy(argv):
             path = os.path.join(".temp", "result.json")
             if os.path.exists(path):
               data = misc.load_json_content(path)
-              if os.path.exists(data["SourceFolder"]) and os.path.exists(data["DestinationFile"]):
+              if os.path.exists(data["SourceFolder"]) and os.path.exists(data["DestinationFolder"]):
                 opt = "--skip-building"
             subprocess.run(f'image-builder create --package . --tag {env_values["REPOSITORY_URL"]}{image_tag} {opt}')
             sys.exit(0)

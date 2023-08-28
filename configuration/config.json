@@ -1,16 +1,16 @@
 {
   "domains": {
     "test": {
-      "test": {
-        "turnServer": {
-          "enable": true
+      "default": {
+        "cloudPlatformParameters": {
+          "hardware": [
+            { "gpus": ["RTX_A6000"], "regions": ["LGA1"], "weight": 1 },
+            { "gpus": ["RTX_A5000"], "regions": ["LGA1"], "weight": 2 }
+          ]
         }
       }
     }
   },
   "applications": {
-    "foo": {
-      
-    }
   }
 }

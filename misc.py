@@ -225,11 +225,11 @@ def save_version_info(branch, data={}, client=True):
           timeLastUpdated = versions[i]["timeLastUpdated"]
 
   if client:
-    subprocess.run(f'ssh -v {host} sudo mkdir -p /var/log/cw-app-logs/{branch}/client', stdout=subprocess.PIPE)
+    subprocess.run(f'ssh {host} sudo mkdir -p /var/log/cw-app-logs/{branch}/client', stdout=subprocess.PIPE)
     versionInfoAddress = f'/var/log/cw-app-logs/{branch}/client/{version}_{current_datetime.strftime("%Y%m%d-%H_%M_%S")}.log'
     activeVersionAddress = f'/var/log/cw-app-logs/{branch}/client/activeVersion.log'
   else:
-    subprocess.run(f'ssh -v {host} sudo mkdir -p /var/log/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
+    subprocess.run(f'ssh {host} sudo mkdir -p /var/log/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
     versionInfoAddress = f'/var/log/cw-app-logs/{branch}/server/{version}_{date}.log'
     activeVersionAddress = f'/var/log/cw-app-logs/{branch}/server/activeVersion.log'
 
@@ -260,8 +260,8 @@ def save_version_info(branch, data={}, client=True):
   base_filename = os.path.basename(tmp)
 
   subprocess.run('scp {}.copy {}:~/.tmp/'.format(tmp, host), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  subprocess.run('ssh -v {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, versionInfoAddress), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  subprocess.run('ssh -v {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, activeVersionAddress), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run('ssh {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, versionInfoAddress), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run('ssh {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, activeVersionAddress), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   os.remove(tmp)
   os.remove(f"{tmp}.copy")

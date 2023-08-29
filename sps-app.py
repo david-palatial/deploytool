@@ -124,7 +124,7 @@ def is_kubectl_installed():
 
 def delete_applications(apps, client_only=False):
   if client_only:
-    for i in len(apps):
+    for i in range(0, len(apps)):
       print(f"Delete {branch}...")
       subprocess.run(f'sps-client application delete --name {apps[i]}')
   else:

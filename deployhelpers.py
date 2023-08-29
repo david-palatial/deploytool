@@ -168,6 +168,7 @@ def reset_application(branch, version=None, container_tag=None, owner=None):
   sys.stdout.flush()
   misc.wait_for_status(branch, "Running", msg=". ")
   print("\nFINISHED")
+  sys.stdout.flush()
 
 def print_dots(duration):
     q = queue.Queue()

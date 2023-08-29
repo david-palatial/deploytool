@@ -51,6 +51,9 @@ def generate_config_file(branch, default_config, container_tag=None, owner=None)
 
 def switch_active_version(branch, version, path=None):
   print("Setting active version...\n")
+  sys.stdout.flush()
+
+  misc.wait_for_status(branch, r"New|Running")
 
   if not path:
     subprocess.run(f"sps-client application update --name {branch} --activeVersion {version}")
@@ -127,11 +130,9 @@ def reset_app_version(branch, path=options_path, owner=None):
         set_new_version(branch, version, resetting=True, path=path, owner=owner)
 
 def make_new_application(branch, version, tag=None, wait=True, owner=None):
-    sys.stdout.write("Creating application")
-    if wait == True:
-      print_dots(25)
-    else:
-      print_dots(3)
+    print("Creating application. . . ", end="")
+    sys.stdout.flush()
+    misc.wait_for_deleted(branch, msg=". ")
     subprocess.run(f"sps-client application create --name {branch}")
     set_new_version(branch, version, container_tag=tag, owner=owner)
 
@@ -163,9 +164,10 @@ def reset_application(branch, version=None, container_tag=None, owner=None):
 
   make_new_application(branch, version, tag=container_tag, owner=owner, wait=True)
 
-  sys.stdout.write("Finishing up")
-  print_dots(6)
-  print("FINISHED")
+  print("Finishing up. . . ", end="")
+  sys.stdout.flush()
+  misc.wait_for_status(branch, "Running", msg=". ")
+  print("\nFINISHED")
 
 def print_dots(duration):
     q = queue.Queue()
@@ -434,8 +436,9 @@ def deploy(argv):
         else:
             make_new_application(branch, version, wait=False, owner=owner)
             if app_only:
-              sys.stdout.write("Finishing up")
-              print_dots(6)
+              print("Finishing up. . . ", end="")
+              sys.stdout.flush()
+              misc.wait_for_status(branch, "Running", msg=". ")
 
         appInfo = {
           "customDockerBuild": use_firebase,

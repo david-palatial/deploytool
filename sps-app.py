@@ -122,9 +122,14 @@ def is_kubectl_installed():
     except subprocess.CalledProcessError:
         return False
 
-def delete_application(branch):
-  print(f"Delete {branch}...")
-  subprocess.run(f'sps-client application delete --name {branch}')
+def delete_applications(apps, client_only=False):
+  if client_only:
+    for i in len(apps):
+      print(f"Delete {branch}...")
+      subprocess.run(f'sps-client application delete --name {apps[i]}')
+  else:
+    branches = ' '.join(apps)
+    subprocess.run(f'ssh {misc.host} ./link-deployment/util/cleanup.sh {branches}')
 
 def reload_env_file(env_path, values):
   with open(env_path, 'w') as f:
@@ -213,17 +218,16 @@ elif command == "delete":
     help_menus.show_delete_help()
     sys.exit(0)
 
-  if len(sys.argv) == 4:
-    if not sys.argv[3].lower() in ["-a", "--app-only", "-c", "--client-only"]:
-      print(f"error: unknown option {sys.argv[3]}")
-      sys.exit(1)
-    apps = sys.argv[2:len(sys.argv)-1]
-    for i in range(0, len(apps)):
-      delete_application(apps[i])
-    sys.exit(0)
+  client_only = False
+  upper = len(sys.argv)
 
-  branches = ' '.join(sys.argv[2:])
-  subprocess.run(f'ssh {misc.host} ./link-deployment/util/cleanup.sh {branches}')
+  if len(sys.argv) > 3:
+    if sys.argv[3].lower() in ["-a", "--app-only", "-c", "--client-only"]:
+      client_only = True
+      upper -= 1
+
+  apps = sys.argv[2:upper]
+  delete_applications(apps, client_only=client_only)
 
 elif command == "create":
   if len(sys.argv) < 3 or sys.argv[2] == "-h" or sys.argv[2] == "--help":

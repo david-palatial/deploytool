@@ -267,4 +267,36 @@ def save_version_info(branch, data={}, client=True):
   os.remove(f"{tmp}.copy")
 
   print("\nVersion information saved to " + versionInfoAddress)
+
+def wait_for_status(app, status, msg=None):
+  count = 0
+  while True:
+    data = get_sps_json_output(f'sps-client application info -n {app}')
+    
+    if count % 2 == 0 and data["statusCode"] == 200 and re.search(data["response"]["status"], status):
+      break
+    else:
+      if count == 20:
+        break
+      if msg:
+        print(msg, end="")
+      sys.stdout.flush()
+      time.sleep(1)
+
+def wait_for_deleted(app, msg=None):
+  count = 0
+  while True:
+    data = get_sps_json_output(f'sps-client application info -n {app}')
+    
+    if count % 2 == 0 and data["statusCode"] == 404:
+      break
+    else:
+      if count == 20:
+        break
+      if msg:
+        print(msg, end="")
+      sys.stdout.flush()
+      time.sleep(1)
+
+      count += 1
   

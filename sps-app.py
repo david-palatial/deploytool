@@ -222,7 +222,7 @@ elif command == "delete":
   upper = len(sys.argv)
 
   if len(sys.argv) > 3:
-    if sys.argv[3].lower() in ["-a", "--app-only", "-c", "--client-only"]:
+    if sys.argv[-1].lower() in ["-a", "--app-only", "-c", "--client-only"]:
       client_only = True
       upper -= 1
 

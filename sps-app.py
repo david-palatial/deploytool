@@ -358,6 +358,9 @@ elif command == "config":
       process_config_argument(args, "--image-registry",      'IMAGE_REGISTRY',      i, len(args))
       process_config_argument(args, "--api-key",             'API_KEY',             i, len(args))
 
+    if len(sys.argv) < 4:
+      sys.exit(0)
+
     reload_env_file(env_path, env_values)
 
     sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"

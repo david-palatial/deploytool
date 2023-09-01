@@ -348,7 +348,7 @@ elif command == "config":
   else:
     args = sys.argv[2:]
     current_registry_username = env_values['REGISTRY_USERNAME']
-    current_repostiory_url = env_values['REPOSITORY_URL']
+    current_repository_url = env_values['REPOSITORY_URL']
 
     for i in range(0, len(args)):
       process_config_argument(args, "--api-key",             'API_KEY',             i, len(args))

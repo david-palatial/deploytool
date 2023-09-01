@@ -139,7 +139,7 @@ def reload_env_file(env_path, values):
 def process_config_argument(args, opt, envVar, i, len):
   if args[i] == opt:
     if opt.endswith("password-stdin"):
-      env_values[envVar] = getpass("Password: ")
+      env_values[envVar] = getpass.getpass("Password: ")
       return
     if i + 1 >= len:
       if i == 0:

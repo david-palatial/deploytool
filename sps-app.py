@@ -347,6 +347,9 @@ elif command == "config":
       print(key)
   else:
     args = sys.argv[2:]
+    current_registry_username = env_values['REGISTRY_USERNAME']
+    current_repostiory_url = env_values['REPOSITORY_URL']
+
     for i in range(0, len(args)):
       process_config_argument(args, "--api-key",             'API_KEY',             i, len(args))
       process_config_argument(args, "--registry-username",   'REGISTRY_USERNAME',   i, len(args))
@@ -360,6 +363,12 @@ elif command == "config":
 
     if len(sys.argv) < 4:
       sys.exit(0)
+
+    if current_registry_username != env_values['REGISTRY_USERNAME'] and current_repository_url == env_values['REPOSITORY_URL']:
+      new_repo_url = None
+      while not new_repo_url
+        new_repo_url = input("Enter your new repository url (ex. docker.io/dgodfrey206/): ")
+      env_values['REPOSITORY_URL'] = new_repo_url
 
     reload_env_file(env_path, env_values)
 

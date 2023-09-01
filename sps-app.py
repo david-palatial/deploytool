@@ -138,6 +138,9 @@ def reload_env_file(env_path, values):
 
 def process_config_argument(args, opt, envVar, i, len):
   if args[i] == opt:
+    if opt.endswith("password-stdin"):
+      env_values[envVar] = getpass("Password: ")
+      return
     if i + 1 >= len:
       if i == 0:
         print(env_values[envVar])
@@ -351,15 +354,16 @@ elif command == "config":
     current_repository_url = env_values['REPOSITORY_URL']
 
     for i in range(0, len(args)):
-      process_config_argument(args, "--api-key",             'API_KEY',             i, len(args))
-      process_config_argument(args, "--registry-username",   'REGISTRY_USERNAME',   i, len(args))
-      process_config_argument(args, "--registry-password",   'REGISTRY_PASSWORD',   i, len(args))
-      process_config_argument(args, "--coreweave-namespace", 'COREWEAVE_NAMESPACE', i, len(args))
-      process_config_argument(args, "--region",              'REGION',              i, len(args))
-      process_config_argument(args, "--server-name",         'SPS_REST_API_SERVER', i, len(args))
-      process_config_argument(args, "--repository-url",      'REPOSITORY_URL',      i, len(args))
-      process_config_argument(args, "--image-registry",      'IMAGE_REGISTRY',      i, len(args))
-      process_config_argument(args, "--api-key",             'API_KEY',             i, len(args))
+      process_config_argument(args, "--api-key",                 'API_KEY',             i, len(args))
+      process_config_argument(args, "--registry-username",       'REGISTRY_USERNAME',   i, len(args))
+      process_config_argument(args, "--registry-password",       'REGISTRY_PASSWORD',   i, len(args))
+      process_config_argument(args, "--registry-password-stdin", 'REGISTRY_PASSWORD',   i, len(args))
+      process_config_argument(args, "--coreweave-namespace",     'COREWEAVE_NAMESPACE', i, len(args))
+      process_config_argument(args, "--region",                  'REGION',              i, len(args))
+      process_config_argument(args, "--server-name",             'SPS_REST_API_SERVER', i, len(args))
+      process_config_argument(args, "--repository-url",          'REPOSITORY_URL',      i, len(args))
+      process_config_argument(args, "--image-registry",          'IMAGE_REGISTRY',      i, len(args))
+      process_config_argument(args, "--api-key",                 'API_KEY',             i, len(args))
 
     if len(sys.argv) < 4:
       sys.exit(0)

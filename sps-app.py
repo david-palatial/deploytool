@@ -366,7 +366,7 @@ elif command == "config":
 
     if current_registry_username != env_values['REGISTRY_USERNAME'] and current_repository_url == env_values['REPOSITORY_URL']:
       new_repo_url = None
-      while not new_repo_url
+      while not new_repo_url:
         new_repo_url = input("Enter your new repository url (ex. docker.io/dgodfrey206/): ")
       env_values['REPOSITORY_URL'] = new_repo_url
 

@@ -83,16 +83,17 @@ Example: sps-app shell")
 def show_config_help():
   print("Configuration options for sps-app\n\n\
 usage: sps-app config [options...]\n\n\
---api-key                Get or set the API key for the REST API server\n\
---image-registry         Get or set the registry URL\n\
---registry-username      Get or set the image registry username\n\
---registry-password      Get or set the image registry password\n\
---repository-url         Get or set the base domain for the image repository\n\
---coreweave-namespace    Get or set the coreweave namespace\n\
---server-name            Get or set the name of the REST API server\n\
---region                 Get or set the region\n\
---fetch-api-key          Fetches the latest API key\n\
---display-configuration  Prints out all configurable settings\n\
+--api-key                  Get or set the API key for the REST API server\n\
+--image-registry           Get or set the registry URL\n\
+--registry-username        Get or set the image registry username\n\
+--registry-password        Get or set the image registry password\n\
+--registry-password-stdin  Set the image registry password privately\n\
+--repository-url           Get or set the base domain for the image repository\n\
+--coreweave-namespace      Get or set the coreweave namespace\n\
+--server-name              Get or set the name of the REST API server\n\
+--region                   Get or set the region\n\
+--fetch-api-key            Fetches the latest API key\n\
+--display-configuration    Prints out all configurable settings\n\
 \
 \n\
 Example: sps-app config --fetch-api-key\n\

@@ -126,6 +126,7 @@ Example: sps-app restart-server banyan")
 def show_setup_help():
   print("Sets up Scalable Pixel Streaming CLI tools and generates an SSH key pair.\n\n\
 usage: sps-app setup\n\n\
+    --stdin  Enter all config values manually\n\
 -h, --help   Show help menu\n\n\
 Example: sps-app setup");
 

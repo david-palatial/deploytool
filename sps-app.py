@@ -352,6 +352,11 @@ elif command == "config":
     args = sys.argv[2:]
     current_registry_username = env_values['REGISTRY_USERNAME']
     current_repository_url = env_values['REPOSITORY_URL']
+    
+    region = env_values['REGION']
+    namespace = env_values['COREWEAVE_NAMESPACE']
+    api_server = env_values['SPS_REST_API_SERVER']
+    api_key = env_values['API_KEY']
 
     for i in range(0, len(args)):
       process_config_argument(args, "--api-key",                 'API_KEY',             i, len(args))
@@ -372,20 +377,23 @@ elif command == "config":
       new_repo_url = None
       while not new_repo_url:
         new_repo_url = input("Enter your new repository url (ex. docker.io/dgodfrey206/): ")
+      if not new_repo_url.endswith("/"):
+        new_repo_url += "/"
       env_values['REPOSITORY_URL'] = new_repo_url
 
+    if region != env_values['REGION'] or namespace != env_values['COREWEAVE_NAMESPACE'] or api_server != env_values['SPS_REST_API_SERVER'] or api_key != env_values['API_KEY']:
+      sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
+
+      output = subprocess.run(f"sps-client config delete --name {env_values['SPS_REST_API_SERVER']}", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      result = output.stdout
+      if output.stderr and "already exists" in output.stderr.decode('utf-8'):
+        result = output.stderr[len("Error: "):]
+
+      print(result.decode('utf-8'))
+      subprocess.run(f"sps-client config add --name {env_values['SPS_REST_API_SERVER']} --address {sps_rest_api_address} --access-key " + env_values['API_KEY'])
+      subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
+
     reload_env_file(env_path, env_values)
-
-    sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
-
-    output = subprocess.run(f"sps-client config delete --name {env_values['SPS_REST_API_SERVER']}", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    result = output.stdout
-    if output.stderr and "already exists" in output.stderr.decode('utf-8'):
-      result = output.stderr[len("Error: "):]
-
-    print(result.decode('utf-8'))
-    subprocess.run(f"sps-client config add --name {env_values['SPS_REST_API_SERVER']} --address {sps_rest_api_address} --access-key " + env_values['API_KEY'])
-    subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
       
 elif command == "setup":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):

@@ -209,7 +209,7 @@ elif command == "reset" or command == "restart":
       repo = tag.split(':')[0]
       tag = tag.split(':')[1]
 
-    container_tag = f'{env_values["REPOSITORY_URL"]}{repo}:{tag}'
+    container_tag = f'{env_values["REPOSITORY_URL"]}/{repo}:{tag}'
 
   deployhelpers.reset_application(branch, version=version, container_tag=container_tag)
 
@@ -284,7 +284,7 @@ elif command == "create":
       else:
         version = misc.increment_version(highestVersion)
 
-    deployhelpers.set_new_version(branch, version, container_tag=f'{env_values["REPOSITORY_URL"]}{repo}:{tag}')
+    deployhelpers.set_new_version(branch, version, container_tag=f'{env_values["REPOSITORY_URL"]}/{repo}:{tag}')
 
     data = { "uploader": { "sourceDirectory": "n/a" } }
     misc.save_version_info(branch, data, client=True)
@@ -377,9 +377,7 @@ elif command == "config":
       new_repo_url = None
       while not new_repo_url:
         new_repo_url = input("Enter your new repository url (ex. docker.io/dgodfrey206/): ")
-      if not new_repo_url.endswith("/"):
-        new_repo_url += "/"
-      env_values['REPOSITORY_URL'] = new_repo_url
+      env_values['REPOSITORY_URL'] = new_repo_url.trim("/")
 
     if region != env_values['REGION'] or namespace != env_values['COREWEAVE_NAMESPACE'] or api_server != env_values['SPS_REST_API_SERVER'] or api_key != env_values['API_KEY']:
       sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"

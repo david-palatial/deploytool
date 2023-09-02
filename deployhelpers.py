@@ -66,7 +66,7 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
       switch_active_version(branch, version)
       return
     if container_tag == None:
-      container_tag = f"{env_values['REPOSITORY_URL']}{branch}:{version}"
+      container_tag = f"{env_values['REPOSITORY_URL']}/{branch}:{version}"
     if resetting == True:
         print("Deleting version...")
         subprocess.run(f"sps-client version delete --name {version} --application {branch}")
@@ -251,9 +251,9 @@ ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_Template{fold
 
     with open("../Dockerfile", "w") as f:
         f.write(Dockerfile)
-    
-    os.system(f"docker build -t {env_values['REGISTRY_USERNAME']}/{image_tag} ..")
-    os.system(f"docker push {env_values['REGISTRY_USERNAME']}/{image_tag}")
+
+    os.system(f"docker build -t {env_values['REPOSITORY_URL']}/{image_tag} ..")
+    os.system(f"docker push {env_values['REPOSITORY_URL']}/{image_tag}")
 
 def starts_with_single_hyphen(s):
     return s.startswith('-') and not s.startswith('--')
@@ -422,7 +422,7 @@ def deploy(argv):
               data = misc.load_json_content(path)
               if os.path.exists(data["SourceFolder"]) and os.path.exists(data["DestinationFolder"]):
                 opt = "--skip-building"
-            subprocess.run(f'image-builder create --package . --tag {env_values["REPOSITORY_URL"]}{image_tag} {opt}')
+            subprocess.run(f'image-builder create --package . --tag {env_values["REPOSITORY_URL"]}/{image_tag} {opt}')
             sys.exit(0)
 
         if image_only:

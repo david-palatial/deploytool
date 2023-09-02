@@ -76,11 +76,11 @@ def generate_ssh_key_pair():
 
     # Check if the key pair already exists
     if os.path.isfile(private_key_path) and os.path.isfile(public_key_path):
-        print("SSH key pair already exists. Skipping generation...\n")
-        print("Send this public key to David: ")
+        print("\nSSH key pair already exists. Skipping generation...\n")
+        key = None
         with open(public_key_path, "r") as f:
-          print(f.read())
-        return
+          key = f.read()
+        return key
  
     # Generate a new key pair
     from cryptography.hazmat.primitives.asymmetric import rsa
@@ -398,6 +398,30 @@ elif command == "setup":
     help_menus.show_setup_help()
     sys.exit(0)
 
+  if len(sys.argv) == 3 and sys.argv[2] == "--stdin":
+    server = input(f"Server name [{env_values['SPS_REST_API_SERVER']}]: ")
+    username = input(f"Image registry username [{env_values['REGISTRY_USERNAME']}]: ")
+    password = getpass.getpass(f"Image registry password [Enter for default]: ")
+    image_registry = input(f"Image registry API [{env_values['IMAGE_REGISTRY']}]: ")
+    repo_url = input(f"Repository URL [{env_values['REPOSITORY_URL']}]: ")
+    region = input(f"Region [{env_values['REGION']}]: ")
+    namespace = input(f"Coreweave namespace [{env_values['COREWEAVE_NAMESPACE']}]: ")
+
+    if server:
+      env_values['SPS_REST_API_SERVER'] = server
+    if username:
+      env_values['REGISTRY_USERNAME'] = username
+    if password:
+      env_values['REGISTRY_PASSWORD'] = password
+    if image_registry:
+      env_values['IMAGE_REGISTRY'] = image_registry
+    if repo_url:
+      env_values['REPOSITORY_URL'] = repo_url
+    if region:
+      env_values['REGION'] = region
+    if namespace:
+      env_values['COREWEAVE_NAMESPACE'] = namespace
+
   key = GetKey()
   while not key:
     print("Copy the API key from https://apps.coreweave.com/#/c/default/ns/{env_values['COREWEAVE_NAMESPACE']}/apps/helm.packages/v1alpha1/{env_values['SPS_REST_API_SERVER']} and paste it below")
@@ -419,7 +443,10 @@ elif command == "setup":
   print(result.decode('utf-8'))
   
   subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
-  generate_ssh_key_pair()
+  key = generate_ssh_key_pair()
+  if key:
+    print("sps-app is set! Send this public key to David: ")
+    print(key)
 elif command == "restart-webpage":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_Restart_Webpage_help()

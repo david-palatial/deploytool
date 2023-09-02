@@ -112,8 +112,7 @@ def generate_ssh_key_pair():
     # Print the public key if created
     if public_key_bytes:
         print("SSH key pair generated successfully.")
-        print("Send this public key to David:")
-        print(public_key_bytes.decode())
+        return public_key_bytes.decode()
 
 def is_kubectl_installed():
     try:
@@ -342,12 +341,19 @@ elif command == "config":
     help_menus.show_config_help()
     sys.exit(0)
 
-  if sys.argv[2] == "--fetch-api-key":
+  if len(sys.argv) == 3 and sys.argv[2] == "--fetch-api-key":
     key = env_values['API_KEY'] = GetKey()
     if not key:
       print("error: could not fetch key. copy the API key from https://apps.coreweave.com/#/c/default/ns/{env_values['COREWEAVE_NAMESPACE']}/apps/helm.packages/v1alpha1/{env_values['SPS_REST_API_SERVER']} and paste it into 'sps-app config --api-key <key>' instead")
     else:
       print(key)
+  elif len(sys.argv) == 3 and sys.argv[2] == "--display-configuration":
+    print("Registry username: " + env_values['REGISTRY_USERNAME'])
+    print("Registry password: " + ("*" * len(env_values['REGISTRY_PASSWORD'])))
+    print("Coreweave namespace: " + env_values['COREWEAVE_NAMESPACE'])
+    print("Repository URL: " + env_values['REPOSITORY_URL'])
+    print("Image Registry API: " + env_values['IMAGE_REGISTRY'])
+    print("API key: " + env_values['API_KEY'])
   else:
     args = sys.argv[2:]
     current_registry_username = env_values['REGISTRY_USERNAME']
@@ -359,7 +365,6 @@ elif command == "config":
     api_key = env_values['API_KEY']
 
     for i in range(0, len(args)):
-      process_config_argument(args, "--api-key",                 'API_KEY',             i, len(args))
       process_config_argument(args, "--registry-username",       'REGISTRY_USERNAME',   i, len(args))
       process_config_argument(args, "--registry-password",       'REGISTRY_PASSWORD',   i, len(args))
       process_config_argument(args, "--registry-password-stdin", 'REGISTRY_PASSWORD',   i, len(args))

@@ -161,7 +161,7 @@ def process_config_argument(args, opt, envVar, i, len):
       else:
         env_values[envVar] = args[i+1]
 
-if len(sys.argv) < 2 or sys.argv[1] not in ["deploy", "reset", "update", "delete", "create", "restart-server", "shell", "config", "setup", "restart-webpage", "restart", "version-info", "enable", "disable"]:
+if len(sys.argv) < 2 or sys.argv[1] not in ["deploy", "reset", "update", "delete", "create", "restart-server", "shell", "config", "setup", "restart-webpage", "restart", "version-info", "enable", "disable", "create-link"]:
   help_menus.show_spsApp_help()
   sys.exit(1)
 
@@ -529,6 +529,23 @@ elif command == "enable":
   latest_datetime_index = datetime_objects.index(latest_datetime)
 
   subprocess.run(f'sps-client application update -n {app} --activeVersion {versions[latest_datetime_index]["name"]}', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+elif command == "create-link":
+  if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
+    help_menus.show_createLink_help()
+    sys.exit(0)
+  app = sys.argv[2]
+  owner = None
+  if "--owner" in sys.argv:
+    idx = sys.argv.index("--owner")
+    if idx + 1 >= len(sys.argv):
+      print("error: --owner must have an argument")
+      sys.exit(1)
+    owner = sys.argv[idx + 1]
+  
+  args = app
+  if owner:
+    args = owner + " " + args
+  subprocess.run(f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py {args}')
 else:
   for i in range(1, len(sys.argv)):
     opt = sys.argv[i]

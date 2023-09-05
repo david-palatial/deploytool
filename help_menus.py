@@ -13,6 +13,7 @@ restart-server  Restarts a dedicated server\n\
 restart-webpage Restarts the webserver\n\
 enable          Activates an application with the latest version\n\
 disable         Removes the active version from an application\n\
+create-link     Add a frontend for the application\n\
 -h, --help      Show help menu\n\n\
 \n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\
@@ -138,3 +139,10 @@ def show_Version_Info_help():
 usage: sps-app version-info <branch>\n\n\
 -h, --help      Show help menu\n\n\
 Example: sps-app version-info oslodemo")
+
+def show_createLink_help():
+  print("Adds a frontend that runs the given application\n\n\
+usage: sps-app create-link <branch>\n\n\
+    --owner     The subdomain that the application belongs to (i.e test)\n\
+-h, --help      Show help menu\n\n\
+Example: sps-app create-link oslodemo")

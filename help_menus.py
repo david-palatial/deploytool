@@ -26,11 +26,11 @@ usage: sps-app deploy <dir> [options...]\n\n\
 -S,     --server-only                      Only deploy the server\n\
 -I,     --image-only                       Deploy only the image to Docker Hub\n\
 -b,     --branch                           The application branch to deploy to (dev, demo, prophet, etc.)\n\
-        --owner                            Specifies the subdomain to which application belongs\n\
+        --owner                            The subdomain the application belongs to\n\
         --vn, --version-name               Name the version for the application\n\
         --add-volume-mount                 Add a storage volume to the application\n\
 -F,     --custom-docker-build, --firebase  Deploys with custom dependencies\n\
-        --create-link                      Creates a frontend that runs the application\n\
+        --create-link                      Include a frontend that runs the application\n\
         --config                           Path to the JSON configuration file\n\
 -h,     --help                             Get help for commands\n\n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\

@@ -114,6 +114,16 @@ def generate_ssh_key_pair():
         print("SSH key pair generated successfully.")
         return public_key_bytes.decode()
 
+def custom_password_input(prompt="Password: "):
+    password = ""
+    while True:
+        char = getpass.getpass(prompt='', stream=None)
+        if not char:
+            break
+        password += char
+        print('*')
+    return password
+
 def is_kubectl_installed():
     try:
         subprocess.run(['kubectl'], check=True, capture_output=True)
@@ -397,7 +407,6 @@ elif command == "config":
       subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
 
     reload_env_file(env_path, env_values)
-      
 elif command == "setup":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_setup_help()
@@ -450,7 +459,7 @@ elif command == "setup":
   subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
   key = generate_ssh_key_pair()
   if key:
-    print("sps-app is set! Send this public key to David: ")
+    print("Setup is complete. Send this public key to David: ")
     print(key)
 elif command == "restart-webpage":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):

@@ -269,6 +269,7 @@ def deploy(argv):
     version = None
     self_selected_version = False
     owner = None
+    create_link = False
 
     global options_path
 
@@ -295,7 +296,8 @@ def deploy(argv):
         "--firebase",
         "--version-name",
         "--owner",
-	"--custom-docker-build"
+	"--custom-docker-build",
+        "--create-link"
     ]
 
     single_options = ["-F", "-A", "-C", "-I", "-S"]
@@ -350,6 +352,8 @@ def deploy(argv):
         if opt == "--image-only":
             image_only = True
             app_only = True
+        if opt == "--create-link":
+          create_link = True
         if opt == "--owner":
           if i + 1 >= len(argv):
             print("error: --owner provided without an argument")
@@ -481,5 +485,12 @@ def deploy(argv):
         }
 
         misc.save_version_info(branch, data, client=False)
+
+    if create_link:
+      args = branch
+      if owner:
+        args = owner + " " + args
+
+      subprocess.run(f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py {args}')
 
     print("FINISHED")

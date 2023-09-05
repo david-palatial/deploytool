@@ -30,6 +30,7 @@ usage: sps-app deploy <dir> [options...]\n\n\
         --vn, --version-name               Name the version for the application\n\
         --add-volume-mount                 Add a storage volume to the application\n\
 -F,     --custom-docker-build, --firebase  Deploys with custom dependencies\n\
+        --create-link                      Creates a frontend that runs the application\n\
         --config                           Path to the JSON configuration file\n\
 -h,     --help                             Get help for commands\n\n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\

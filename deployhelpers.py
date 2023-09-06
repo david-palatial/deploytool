@@ -81,7 +81,7 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
           "containerTag": container_tag
         },
         "credentials": {
-          "registry": env_values['IMAGE_REGISTRY'],
+          "registry": env_values['IMAGE_REGISTRY_API'],
           "username": env_values['REGISTRY_USERNAME'],
           "password": env_values['REGISTRY_PASSWORD']
         }
@@ -217,7 +217,7 @@ def build_docker_image(branch, image_tag):
     client.login(
         username=env_values['REGISTRY_USERNAME'],
         password=env_values['REGISTRY_PASSWORD'],
-        registry=env_values['IMAGE_REGISTRY'],
+        registry=env_values['IMAGE_REGISTRY_API'],
     )
 
     Dockerfile = f"""

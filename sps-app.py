@@ -362,7 +362,7 @@ elif command == "config":
     print("Registry password: " + ("*" * len(env_values['REGISTRY_PASSWORD'])))
     print("Coreweave namespace: " + env_values['COREWEAVE_NAMESPACE'])
     print("Repository URL: " + env_values['REPOSITORY_URL'])
-    print("Image Registry API: " + env_values['IMAGE_REGISTRY'])
+    print("Image Registry API: " + env_values['IMAGE_REGISTRY_API'])
     print("API key: " + env_values['API_KEY'])
   else:
     args = sys.argv[2:]
@@ -416,7 +416,7 @@ elif command == "setup":
     server = input(f"Server name [{env_values['SPS_REST_API_SERVER']}]: ")
     username = input(f"Image registry username [{env_values['REGISTRY_USERNAME']}]: ")
     password = getpass.getpass(f"Image registry password [Enter for default]: ")
-    image_registry = input(f"Image registry API [{env_values['IMAGE_REGISTRY']}]: ")
+    image_registry_api = input(f"Image registry API [{env_values['IMAGE_REGISTRY_API']}]: ")
     repo_url = input(f"Repository URL [{env_values['REPOSITORY_URL']}]: ")
     region = input(f"Region [{env_values['REGION']}]: ")
     namespace = input(f"Coreweave namespace [{env_values['COREWEAVE_NAMESPACE']}]: ")
@@ -427,8 +427,8 @@ elif command == "setup":
       env_values['REGISTRY_USERNAME'] = username
     if password:
       env_values['REGISTRY_PASSWORD'] = password
-    if image_registry:
-      env_values['IMAGE_REGISTRY'] = image_registry
+    if image_registry_api:
+      env_values['IMAGE_REGISTRY_API'] = image_registry_api
     if repo_url:
       env_values['REPOSITORY_URL'] = repo_url
     if region:
@@ -446,7 +446,7 @@ elif command == "setup":
 
   sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
 
-  subprocess.run(f"image-builder auth --username {env_values['REGISTRY_USERNAME']} --password {env_values['REGISTRY_PASSWORD']} --registry {env_values['IMAGE_REGISTRY']}")
+  subprocess.run(f"image-builder auth --username {env_values['REGISTRY_USERNAME']} --password {env_values['REGISTRY_PASSWORD']} --registry {env_values['IMAGE_REGISTRY_API']}")
 
   output = subprocess.run(f"sps-client config add --name {env_values['SPS_REST_API_SERVER']} --address {sps_rest_api_address} --access-key " + env_values['API_KEY'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 

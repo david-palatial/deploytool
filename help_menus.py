@@ -95,7 +95,7 @@ usage: sps-app config [options...]\n\n\
 --server-name              Get or set the name of the REST API server\n\
 --region                   Get or set the region\n\
 --fetch-api-key            Fetches the latest API key\n\
---display                  Prints out all configurable settings\n\
+--list                     Prints out all configurable settings\n\
 \
 \n\
 Example: sps-app config --fetch-api-key\n\

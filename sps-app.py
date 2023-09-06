@@ -357,7 +357,7 @@ elif command == "config":
       print("error: could not fetch key. copy the API key from https://apps.coreweave.com/#/c/default/ns/{env_values['COREWEAVE_NAMESPACE']}/apps/helm.packages/v1alpha1/{env_values['SPS_REST_API_SERVER']} and paste it into 'sps-app config --api-key <key>' instead")
     else:
       print(key)
-  elif len(sys.argv) == 3 and sys.argv[2] == "--display":
+  elif len(sys.argv) == 3 and sys.argv[2] == "--list":
     print("Registry username: " + env_values['REGISTRY_USERNAME'])
     print("Registry password: " + ("*" * len(env_values['REGISTRY_PASSWORD'])))
     print("Coreweave namespace: " + env_values['COREWEAVE_NAMESPACE'])

@@ -33,7 +33,7 @@ host = env_values['HOST']
 def file_exists_on_remote(host, remote_file_path):
     try:
         # SSH command to check if the file exists
-        command = f'ssh {host} test -f {remote_file_path} && echo True || echo False'
+        command = f'ssh -v {host} test -f {remote_file_path} && echo True || echo False'
 
         # Run the command and suppress the output
         result = subprocess.run(command, shell=True, text=True, stdout=subprocess.PIPE)

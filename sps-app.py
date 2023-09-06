@@ -382,7 +382,7 @@ elif command == "config":
       process_config_argument(args, "--region",                  'REGION',              i, len(args))
       process_config_argument(args, "--server-name",             'SPS_REST_API_SERVER', i, len(args))
       process_config_argument(args, "--repository-url",          'REPOSITORY_URL',      i, len(args))
-      process_config_argument(args, "--image-registry",          'IMAGE_REGISTRY',      i, len(args))
+      process_config_argument(args, "--image-registry-api",      'IMAGE_REGISTRY_API',  i, len(args))
       process_config_argument(args, "--api-key",                 'API_KEY',             i, len(args))
 
     if len(sys.argv) < 4:

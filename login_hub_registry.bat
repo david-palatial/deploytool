@@ -1,0 +1,1 @@
+python sps-app.py config --registry-username dgodfrey206 --registry-password applesauce --image-registry-api https://index.docker.io/v2/ --repository-url docker.io/dgodfrey206

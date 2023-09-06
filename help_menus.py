@@ -86,7 +86,7 @@ def show_config_help():
   print("Configuration options for sps-app\n\n\
 usage: sps-app config [options...]\n\n\
 --api-key                  Get or set the API key for the REST API server\n\
---image-registry           Get or set the registry URL\n\
+--image-registry-api       Get or set the registry API URL\n\
 --registry-username        Get or set the image registry username\n\
 --registry-password        Get or set the image registry password\n\
 --registry-password-stdin  Set the image registry password privately\n\

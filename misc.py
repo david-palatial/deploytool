@@ -205,7 +205,7 @@ def check_docker_image_exists(image_name):
 def write_to_remote(file_path, data):
   tmp = tempfile.mktemp()
   with open(tmp, 'w') as f:
-    f.write(json_data)
+    f.write(data)
 
   shutil.copy(tmp, f"{tmp}.copy")
 

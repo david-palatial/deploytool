@@ -104,23 +104,27 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
       data = misc.get_sps_json_output(command)
       count += 1
 
-    if data["statusCode"] == 200:
+    if data["statusCode"] == 201:
       print(json.dumps(data, indent=7))
     else:
       print("error: " + data["response"])
+
       data = {
         "owner": owner if owner else "n/a",
         "application": branch,
         "response": data["response"],
-        "timeReported": datetime.datetime.now(),
+        "timeReported": str(datetime.now()),
         "uploader": {
           "hostName": socket.gethostname(),
           "ipAddress": str(misc.get_public_ip()),
-          "sourceDirectory": dir_name,
+          "sourceDirectory": os.getcwd(),
           "command": ' '.join(sys.argv)
         }
       }
-      misc.write_to_remote(f'/var/log/error-logs/{branch}_{version}_{data["timeReported"]}', data)
+
+      error_path = f'/var/log/error-logs/{branch}_{version}_{data["timeReported"]}'
+      misc.write_to_remote(error_path, json.dumps(data, indent=2))
+      print(f"Error report written to {error_path}")
       sys.exit(1)
 
     json_data.update({

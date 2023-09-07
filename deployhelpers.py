@@ -104,7 +104,7 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
       data = misc.get_sps_json_output(command)
       count += 1
 
-    if data["statusCode"] == 201:
+    if data["statusCode"] == 200:
       print(json.dumps(data, indent=7))
     else:
       print("error: " + data["response"])

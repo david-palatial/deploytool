@@ -202,6 +202,18 @@ def check_docker_image_exists(image_name):
         print(f"Error occurred while checking image existence: {e}")
         return False
 
+def write_to_remote(file_path, data):
+  tmp = tempfile.mktemp()
+  with open(tmp, 'w') as f:
+    f.write(json_data)
+
+  shutil.copy(tmp, f"{tmp}.copy")
+
+  base_filename = os.path.basename(tmp)
+
+  subprocess.run('scp {}.copy {}:~/.tmp/'.format(tmp, host), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run('ssh {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, file_path), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
 def save_version_info(branch, data={}, client=True):
   print("Saving version info...")
   current_datetime = datetime.now()

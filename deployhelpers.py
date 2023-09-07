@@ -19,6 +19,7 @@ import help_menus
 from datetime import datetime
 import tempfile
 import shutil
+import socket
 from dotenv import dotenv_values
 
 exe_path = misc.get_exe_directory()
@@ -107,6 +108,19 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
       print(json.dumps(data, indent=7))
     else:
       print("error: " + data["response"])
+      data = {
+        "owner": owner if owner else "n/a",
+        "application": branch,
+        "response": data["response"],
+        "timeReported": datetime.datetime.now(),
+        "uploader": {
+          "hostName": socket.gethostname(),
+          "ipAddress": str(misc.get_public_ip()),
+          "sourceDirectory": dir_name,
+          "command": ' '.join(sys.argv)
+        }
+      }
+      misc.write_to_remote(f'/var/log/error-logs/{branch}_{version}_{data["timeReported"]}', data)
       sys.exit(1)
 
     json_data.update({

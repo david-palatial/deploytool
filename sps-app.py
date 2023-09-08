@@ -230,12 +230,12 @@ elif command == "delete":
     help_menus.show_delete_help()
     sys.exit(0)
 
-  client_only = False
+  client_only = True
   upper = len(sys.argv)
 
   if len(sys.argv) > 3:
-    if sys.argv[-1].lower() in ["-a", "--app-only", "-c", "--client-only"]:
-      client_only = True
+    if sys.argv[-1].lower() == "--full":
+      client_only = False
       upper -= 1
 
   apps = sys.argv[2:upper]

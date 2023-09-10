@@ -275,6 +275,8 @@ ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_Template{fold
     os.system(f"docker push {env_values['REPOSITORY_URL']}/{image_tag}")
     os.system(f"docker push {env_values['REPOSITORY_URL']}/{branch}:latest")
 
+    os.remove("../Dockerfile")
+
 def starts_with_single_hyphen(s):
     return s.startswith('-') and not s.startswith('--')
 

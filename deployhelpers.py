@@ -271,7 +271,9 @@ ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_Template{fold
         f.write(Dockerfile)
 
     os.system(f"docker build -t {env_values['REPOSITORY_URL']}/{image_tag} ..")
+    os.system(f"docker tag {env_values['REPOSITORY_URL']}/{image_tag} {env_values['REPOSITORY_URL']}/{branch}:latest")
     os.system(f"docker push {env_values['REPOSITORY_URL']}/{image_tag}")
+    os.system(f"docker push {env_values['REPOSITORY_URL']}/{branch}:latest")
 
 def starts_with_single_hyphen(s):
     return s.startswith('-') and not s.startswith('--')

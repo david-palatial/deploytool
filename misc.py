@@ -214,6 +214,92 @@ def write_to_remote(file_path, data):
   subprocess.run('scp {}.copy {}:~/.tmp/'.format(tmp, host), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   subprocess.run('ssh {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, file_path), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+def build_docker_image(branch, image_tag, dockerfile_path, is_client=True):
+    # Get the current working directory
+    current_directory = os.getcwd()
+
+    # Extract the name of the current directory from the path
+    directory_name = os.path.basename(current_directory)
+
+    # Check if the directory name is "Linux" (case-sensitive)
+    if directory_name == "Linux":
+        folder_type = ""
+    else:
+        folder_type = "Client"
+
+    # Add dependencies if image tag does not exist
+
+    client = None
+    try:
+        client = docker.from_env()
+        client.ping()
+    except docker.errors.DockerException:
+        print("error: Docker Desktop is not running.")
+        sys.exit(1)
+
+    client.login(
+        username=env_values['REGISTRY_USERNAME'],
+        password=env_values['REGISTRY_PASSWORD'],
+        registry=env_values['IMAGE_REGISTRY_API'],
+    )
+
+    ClientDockerfile = f"""
+FROM adamrehn/ue4-runtime:20.04-cudagl11.1.1
+
+# Install our additional packages
+USER root
+
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
+RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt \
+    apt-get update && apt-get -y upgrade && \
+    apt-get install -y --no-install-recommends \
+        libsecret-1-0 \
+        libgtk2.0-0:i386 \
+        libsm6:i386
+
+USER ue4
+
+# Copy the packaged project files from the build context
+COPY --chown=ue4:ue4 "./Linux{folder_type}" /home/ue4/project
+
+# Ensure the project's startup script is executable
+RUN chmod +x "/home/ue4/project/ThirdTurn_Template{folder_type}.sh"
+
+RUN ln -s /usr/lib/x86_64-linux-gnu/libsecret-1.so.0 /home/ue4/project/Palatial_V01_UE51/Binaries/Linux/libsecret-1.so.0
+RUN ls -al /home/ue4/project/
+
+# Set the project's startup script as the container's entrypoint
+ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_Template{folder_type}.sh"]
+    """
+
+    ServerDockerfile = """
+FROM ubuntu:latest
+
+WORKDIR /
+
+RUN groupadd -r mygroup && useradd -r -g mygroup ue4
+
+RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt     apt-get update && apt-get -y upgrade &&     apt-get install -y --no-install-recommends         libsecret-1-0
+
+USER ue4
+
+COPY --chown=ue4:ue4 ./LinuxServer /LinuxServer
+
+RUN chmod +x "/LinuxServer/ThirdTurn_TemplateServer.sh"
+
+ENTRYPOINT ["bash", "/LinuxServer/ThirdTurn_TemplateServer.sh"]
+"""
+
+    with open(os.path.join(dockerfile_path, "Dockerfile"), "w") as f:
+        f.write(ClientDockerfile if is_client else ServerDockerfile)
+
+    os.system(f'docker build -t {env_values["REPOSITORY_URL"]}/{image_tag} "{dockerfile_path}"')
+    os.system(f"docker tag {env_values['REPOSITORY_URL']}/{image_tag} {env_values['REPOSITORY_URL']}/{branch}:latest")
+    os.system(f"docker push {env_values['REPOSITORY_URL']}/{image_tag}")
+    os.system(f"docker push {env_values['REPOSITORY_URL']}/{branch}:latest")
+
+    os.remove(os.path.join(dockerfile_path, "Dockerfile"))
+
 def save_version_info(branch, data={}, client=True):
   print("Saving version info...")
   current_datetime = datetime.now()
@@ -244,6 +330,14 @@ def save_version_info(branch, data={}, client=True):
     subprocess.run(f'ssh -v {host} sudo mkdir -p /var/log/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
     versionInfoAddress = f'/var/log/cw-app-logs/{branch}/server/{version}_{date}.log'
     activeVersionAddress = f'/var/log/cw-app-logs/{branch}/server/activeVersion.log'
+
+  if version == dir_name:
+    image_tag = f'server-{branch}:{current_datetime.strftime("%Y%m%d-%H_%M_%S")}'
+  else:
+    image_tag = f'server-{branch}:{version}'
+
+  #print("Building and pushing dedicated server docker image:")
+  #build_docker_image(f"server-{branch}", image_tag, os.getcwd(), is_client=False)
 
   info = {
     "branch": branch,

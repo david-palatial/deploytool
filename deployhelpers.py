@@ -208,75 +208,6 @@ def print_dots(duration):
         print(item, end="")
         sys.stdout.flush()
 
-
-def build_docker_image(branch, image_tag):
-    # Get the current working directory
-    current_directory = os.getcwd()
-
-    # Extract the name of the current directory from the path
-    directory_name = os.path.basename(current_directory)
-
-    # Check if the directory name is "Linux" (case-sensitive)
-    if directory_name == "Linux":
-        folder_type = ""
-    else:
-        folder_type = "Client"
-
-    # Add dependencies if image tag does not exist
-
-    client = None
-    try:
-        client = docker.from_env()
-        client.ping()
-    except docker.errors.DockerException:
-        print("error: Docker Desktop is not running.")
-        sys.exit(1)
-
-    client.login(
-        username=env_values['REGISTRY_USERNAME'],
-        password=env_values['REGISTRY_PASSWORD'],
-        registry=env_values['IMAGE_REGISTRY_API'],
-    )
-
-    Dockerfile = f"""
-FROM adamrehn/ue4-runtime:20.04-cudagl11.1.1
-
-# Install our additional packages
-USER root
-
-RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
-RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt \
-    apt-get update && apt-get -y upgrade && \
-    apt-get install -y --no-install-recommends \
-        libsecret-1-0 \
-        libgtk2.0-0:i386 \
-        libsm6:i386
-
-USER ue4
-
-# Copy the packaged project files from the build context
-COPY --chown=ue4:ue4 "./Linux{folder_type}" /home/ue4/project
-
-# Ensure the project's startup script is executable
-RUN chmod +x "/home/ue4/project/ThirdTurn_Template{folder_type}.sh"
-
-RUN ln -s /usr/lib/x86_64-linux-gnu/libsecret-1.so.0 /home/ue4/project/Palatial_V01_UE51/Binaries/Linux/libsecret-1.so.0
-RUN ls -al /home/ue4/project/
-
-# Set the project's startup script as the container's entrypoint
-ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_Template{folder_type}.sh"]
-    """
-
-    with open("../Dockerfile", "w") as f:
-        f.write(Dockerfile)
-
-    os.system(f"docker build -t {env_values['REPOSITORY_URL']}/{image_tag} ..")
-    os.system(f"docker tag {env_values['REPOSITORY_URL']}/{image_tag} {env_values['REPOSITORY_URL']}/{branch}:latest")
-    os.system(f"docker push {env_values['REPOSITORY_URL']}/{image_tag}")
-    os.system(f"docker push {env_values['REPOSITORY_URL']}/{branch}:latest")
-
-    os.remove("../Dockerfile")
-
 def starts_with_single_hyphen(s):
     return s.startswith('-') and not s.startswith('--')
 
@@ -439,7 +370,7 @@ def deploy(argv):
         image_tag = f"{branch}:{version}"
 
         if use_firebase:
-            build_docker_image(branch, image_tag)
+            misc.build_docker_image(branch, image_tag, os.path.dirname(os.getcwd()))
         else:
             opt = ""
             
@@ -492,6 +423,7 @@ def deploy(argv):
 
         print("Making directory...")        
         subprocess.run(f'ssh -v {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        print("Done")
 
         print("\nUploading server...")
         subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', shell=True, text=True, capture_output=False)

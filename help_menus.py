@@ -36,7 +36,7 @@ usage: sps-app deploy <dir> [options...]\n\n\
 -h,     --help                             Get help for commands\n\n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\
 Example: sps-app deploy 23-06-13_build-A_CD_OfficeStandalone -b officedemo --server-only\n\
-Example: sps-app deploy \"C:\Users\employee\Unreal Packages\BuildA\" -FA --add-volume-mount --config settings.json")
+Example: sps-app deploy \"C:\\Users\\employee\\Unreal Packages\\BuildA\" -FA --add-volume-mount --config settings.json")
 
 def show_reset_help():
   print("Deletes and recreates the client application\n\n\

@@ -518,6 +518,9 @@ elif command == "disable":
     sys.exit(1)
 
   subprocess.run(f"sps-client application update -n {app} --activeVersion \"\"", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run(f'kubectl scale statefulset sps-signalling-server-{app} --replicas=0')
+  subprocess.run(f'kubectl scale deployment sps-auth-{app} --replicas=0')
+  subprocess.run(f'kubectl scale deployment sps-instance-manager-{app} --replicas=0')
 elif command == "enable":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_enable_help()
@@ -543,6 +546,9 @@ elif command == "enable":
   latest_datetime_index = datetime_objects.index(latest_datetime)
 
   subprocess.run(f'sps-client application update -n {app} --activeVersion {versions[latest_datetime_index]["name"]}', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run(f'kubectl scale statefulset sps-signalling-server-{app} --replicas=1')
+  subprocess.run(f'kubectl scale deployment sps-auth-{app} --replicas=1')
+  subprocess.run(f'kubectl scale deployment sps-instance-manager-{app} --replicas=1')
 elif command == "create-link":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_createLink_help()

@@ -331,6 +331,10 @@ def deploy(argv):
         if opt == "--firebase" or opt == "--custom-docker-build":
             use_firebase = True
 
+    if app_only and server_only:
+      print("error: conflicting options. --app-only and --server--only are mutually exclusive")
+      sys.exit(1)
+
     if not os.path.exists(dir_name):
         print(f"error: directory {dir_name} does not exist.")
         sys.exit(1)

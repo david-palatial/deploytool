@@ -43,7 +43,7 @@ def show_reset_help():
 usage: sps-app [reset or restart] <branch> [options...]\n\n\
 -t, --tag                  The image tag of the version to reset to\n\
     --vn, --version-name   Optionally provide a name for the new version\n\
--h, --help      Show help menu\n\n\
+-h, --help                 Show help menu\n\n\
 Example: sps-app reset demo\n\
 Example: sps-app restart demo --tag v0-0-4 --version-name version4")
 

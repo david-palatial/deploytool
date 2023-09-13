@@ -28,7 +28,7 @@ def get_exe_directory():
 
 exe_path = get_exe_directory()
 env_values = dotenv_values(os.path.join(exe_path, ".env"))
-#host = env_values['HOST']
+host = env_values['HOST']
 
 def file_exists_on_remote(host, remote_file_path):
     try:

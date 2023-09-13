@@ -25,8 +25,8 @@ def show_Deploy_help():
 usage: sps-app deploy <dir> [options...]\n\n\
 -A, -C, --app-only, --client-only          Only deploy the client\n\
 -S,     --server-only                      Only deploy the server\n\
--I,     --image-only                       Deploy only the image to Docker Hub\n\
--b,     --branch                           The application branch to deploy to (dev, demo, prophet, etc.)\n\
+-I,     --image-only                       Deploy only the image to the image registry\n\
+-b,     --branch                           The application branch to deploy to (i.e dev, demo, prophet, etc.)\n\
         --owner                            The subdomain the application belongs to\n\
         --vn, --version-name               Name the version for the application\n\
         --add-volume-mount                 Add a storage volume to the application\n\
@@ -36,7 +36,7 @@ usage: sps-app deploy <dir> [options...]\n\n\
 -h,     --help                             Get help for commands\n\n\
 Example: sps-app deploy 22-11-23_build-A-CD --branch dev\n\
 Example: sps-app deploy 23-06-13_build-A_CD_OfficeStandalone -b officedemo --server-only\n\
-Example: sps-app deploy . -FA --add-volume-mount --config ../settings.json")
+Example: sps-app deploy "C:\Users\employee\Unreal Packages\BuildA" -FA --add-volume-mount --config settings.json")
 
 def show_reset_help():
   print("Deletes and recreates the client application\n\n\

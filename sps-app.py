@@ -462,7 +462,7 @@ elif command == "setup":
   subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
   key = generate_ssh_key_pair()
   if key:
-    print("=== Setup is complete. Send this public key to David: === \n")
+    print("=== Setup is complete. Send this public key to David: \n")
     print(key)
 elif command == "restart-webpage":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):

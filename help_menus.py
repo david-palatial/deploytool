@@ -85,16 +85,16 @@ Example: sps-app shell")
 def show_config_help():
   print("Configuration options for sps-app\n\n\
 usage: sps-app config [options...]\n\n\
---api-key                  Get or set the API key for the REST API server\n\
---image-registry-api       Get or set the registry API URL\n\
---registry-username        Get or set the image registry username\n\
---registry-password        Get or set the image registry password\n\
+--api-key                  Get/set the API key for the SPS REST API server\n\
+--registry-endpoint        Get/set the image registry API endpoint (i.e https://index.docker.io/v2/)\n\
+--registry-username        Get/set the image registry username\n\
+--registry-password        Get/set the image registry password\n\
 --registry-password-stdin  Set the image registry password privately\n\
---repository-url           Get or set the base domain for the image repository\n\
---coreweave-namespace      Get or set the coreweave namespace\n\
---server-name              Get or set the name of the REST API server\n\
---region                   Get or set the region\n\
---fetch-api-key            Fetches the latest API key\n\
+--repository-url           Get/set the base domain for the image repository (i.e docker.io/dgodfrey206/)\n\
+--coreweave-namespace      Get/set your coreweave namespace\n\
+--server-name              Get/set the name of the REST API server\n\
+--region                   Get/set the region (i.e lga1, ord1, las1)\n\
+--fetch-api-key            Fetches and updates sps-app with the latest API key\n\
 --list                     Prints out all configurable settings\n\
 \
 \n\

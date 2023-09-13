@@ -359,10 +359,10 @@ elif command == "config":
       print(key)
   elif len(sys.argv) == 3 and sys.argv[2] == "--list":
     print("Registry username: " + env_values['REGISTRY_USERNAME'])
-    print("Registry password: " + ("*" * len(env_values['REGISTRY_PASSWORD'])))
+    print("Registry password: " + env_values['REGISTRY_PASSWORD'])
     print("Coreweave namespace: " + env_values['COREWEAVE_NAMESPACE'])
-    print("Repository URL: " + env_values['REPOSITORY_URL'])
-    print("Image Registry API: " + env_values['IMAGE_REGISTRY_API'])
+    print("Base repo URL: " + env_values['REPOSITORY_URL'])
+    print("Registry API endpoint: " + env_values['IMAGE_REGISTRY_API'])
     print("API key: " + env_values['API_KEY'])
   else:
     args = sys.argv[2:]
@@ -382,7 +382,7 @@ elif command == "config":
       process_config_argument(args, "--region",                  'REGION',              i, len(args))
       process_config_argument(args, "--server-name",             'SPS_REST_API_SERVER', i, len(args))
       process_config_argument(args, "--repository-url",          'REPOSITORY_URL',      i, len(args))
-      process_config_argument(args, "--image-registry-api",      'IMAGE_REGISTRY_API',  i, len(args))
+      process_config_argument(args, "--registry-endpoint",       'IMAGE_REGISTRY_API',  i, len(args))
       process_config_argument(args, "--api-key",                 'API_KEY',             i, len(args))
 
     if len(sys.argv) < 4:

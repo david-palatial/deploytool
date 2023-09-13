@@ -412,6 +412,8 @@ elif command == "setup":
     help_menus.show_setup_help()
     sys.exit(0)
 
+  subprocess.run(f'scp david@palatial.tenant-palatial-platform.coreweave.cloud:/mnt/unreal-project/.env {exe_path}')
+
   if len(sys.argv) == 3 and sys.argv[2] == "--stdin":
     server = input(f"Server name [{env_values['SPS_REST_API_SERVER']}]: ")
     username = input(f"Image registry username [{env_values['REGISTRY_USERNAME']}]: ")

@@ -28,7 +28,7 @@ def get_exe_directory():
 
 exe_path = get_exe_directory()
 env_values = dotenv_values(os.path.join(exe_path, ".env"))
-host = env_values['HOST']
+#host = env_values['HOST']
 
 def file_exists_on_remote(host, remote_file_path):
     try:
@@ -277,13 +277,9 @@ FROM ubuntu:latest
 
 WORKDIR /
 
-RUN groupadd -r mygroup && useradd -r -g mygroup ue4
-
 RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt     apt-get update && apt-get -y upgrade &&     apt-get install -y --no-install-recommends         libsecret-1-0
 
-USER ue4
-
-COPY --chown=ue4:ue4 ./LinuxServer /LinuxServer
+COPY ./LinuxServer /LinuxServer
 
 RUN chmod +x "/LinuxServer/ThirdTurn_TemplateServer.sh"
 

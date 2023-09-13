@@ -89,7 +89,7 @@ usage: sps-app config [options...]\n\n\
 --registry-endpoint        Get/set the image registry API endpoint (i.e https://index.docker.io/v2/)\n\
 --registry-username        Get/set the image registry username\n\
 --registry-password        Get/set the image registry password\n\
---registry-password-stdin  Set the image registry password privately\n\
+--registry-password-stdin  Set the image registry password through standard input\n\
 --repository-url           Get/set the base domain for the image repository (i.e docker.io/dgodfrey206/)\n\
 --coreweave-namespace      Get/set your coreweave namespace\n\
 --server-name              Get/set the name of the REST API server\n\
@@ -141,8 +141,8 @@ usage: sps-app version-info <branch>\n\n\
 Example: sps-app version-info oslodemo")
 
 def show_createLink_help():
-  print("Adds a frontend that runs the given application\n\n\
-usage: sps-app create-link <branch>\n\n\
+  print("Creates and returns a URL to a web server that runs the given application\n\n\
+usage: sps-app create-link <application> [options...]\n\n\
     --owner     The subdomain that the application belongs to (i.e test)\n\
 -h, --help      Show help menu\n\n\
 Example: sps-app create-link oslodemo")

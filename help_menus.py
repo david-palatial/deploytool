@@ -41,7 +41,7 @@ Example: sps-app deploy \"C:\\Users\\employee\\Unreal Packages\\BuildA\" -FA --a
 def show_reset_help():
   print("Deletes and recreates the client application\n\n\
 usage: sps-app [reset or restart] <branch> [options...]\n\n\
--t, --tag                  The Docker image tag of the version to reset to\n\
+-t, --tag                  The image tag of the version to reset to\n\
     --vn, --version-name   Optionally provide a name for the new version\n\
 -h, --help      Show help menu\n\n\
 Example: sps-app reset demo\n\
@@ -69,7 +69,7 @@ Example: sps-app delete prophet demo dev")
 def show_create_help():
   print("Creates an application\n\n\
 usage: sps-app create <branch> [options...]\n\n\
--t, --tag                  Create an application using an existing Docker image tag\n\
+-t, --tag                  Create an application using an existing image tag\n\
     --vn, --version-name   Optionally provide a name for the new version when creating from an image tag\n\
 -h, --help                 Show help menu\n\n\
 Example: sps-app create prophet\n\

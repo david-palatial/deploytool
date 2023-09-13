@@ -189,6 +189,10 @@ elif command == "reset" or command == "restart":
     help_menus.show_reset_help()
     sys.exit(1)
 
+  if "-h" in sys.argv or "--help" in sys.argv:
+    help_menus.show_reset_help()
+    sys.exit(1)
+
   branch = sys.argv[2]
   container_tag = None
   version = None

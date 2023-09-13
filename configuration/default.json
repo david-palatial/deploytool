@@ -1,0 +1,12 @@
+{
+  "overProvisioning": {
+    "instances": 2
+  },
+  "httpServer": {
+    "enable": false
+  },
+  "turnServer": {
+    "enable": false
+  },
+  "cloudPlatformParameters": "{\"hardware\":[{\"gpus\":[\"RTX_A6000\"],\"regions\":[\"LGA1\"],\"weight\":1},{\"gpus\":[\"RTX_A5000\"],\"regions\":[\"LGA1\"],\"weight\":2}]}"
+}

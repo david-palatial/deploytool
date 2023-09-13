@@ -1,0 +1,111 @@
+variables:
+  subdomain: "SUPPLIED_BY_TRIGGER"
+  is_firebase: "false"
+  short_sha: $(echo $CI_COMMIT_SHA | cut -c1-9)
+  host: "palatial.tenant-palatial-platform.coreweave.cloud"
+
+validate_variables:
+  stage: build
+  script:
+    - |
+      if [[ "$subdomain" == "SUPPLIED_BY_TRIGGER" ]]; then
+        echo "ERROR: Required variables not provided. Please ensure all variables are explicitly passed when triggering the pipeline."
+        exit 1
+      fi
+
+create_application:
+  stage: build
+  script:
+    - |
+      - tar -xzvf $ARTIFACT_FOLDER_FILE
+      - sps-client application create --name ${short_sha}
+      - sps-client version create --name ${short_sha} --application ${short_sha} –-buildOptions.input.containerTag docker.io/dgodfrey206/${subdomain}:${short_sha} 
+      - sps-client application update --name ${short_sha} --activeVersion ${short_sha}
+  artifacts:
+    paths:
+      - $ARTIFACT_FOLDER_FILE/LinuxClient
+      - $ARTIFACT_FOLDER_FILE/LinuxServer
+
+make_webserver:
+  stage: deploy
+  script:
+    - |
+      - ssh david@$host "sudo certbot certonly -d ${subdomain}.palatialxr.com --nginx"
+      - ssh david@$host "\
+          echo \"\
+          [Unit]\
+          Description=Web server for ${subdomain}\
+
+          [Service]\
+          WorkingDirectory=/home/david/Palatial-Web-Loading/\
+          ExecStart=/bin/bash -c 'npm run start | sudo tee /usr/local/bin/frontend-server-ports/${subdomain}.log'\
+          User=david\
+          Restart=always\
+
+          [Install]\
+          WantedBy=multi-user.target\" > /etc/systemd/system/dom_${subdomain};\
+
+          sudo systemctl daemon-reload;\
+          sudo systemctl enable dom_${subdomain};\
+          sudo systemctl start dom_${subdomain};\
+
+          port=$(cat /etc/systemd/system/dom_${subdomain} | grep -o "http://localhost:[0-9]\+" | grep -o "[0-9]\+");\
+
+          echo \"\
+            server {\
+            listen 443 ssl;\
+            server_name ${subdomain}.palatialxr.com;\
+
+            ssl_certificate /etc/letsencrypt/live/${subdomain}.palatialxr.com/fullchain.pem;\
+            ssl_certificate_key /etc/letsencrypt/live/${subdomain}.palatialxr.com/privkey.pem;\
+
+            root /home/david/Palatial-Web-Loading;\
+            index index.html;\
+
+            location /${short_sha} {\
+                proxy_pass http://localhost:${port};\
+                proxy_http_version 1.1;\
+                proxy_set_header Upgrade \$http_upgrade;\
+                proxy_set_header Connection \"upgrade\";\
+                proxy_set_header Host \$host;\
+            }\
+          }\" > /etc/nginx/sites-available/${subdomain}.conf;\
+
+          ln -s /etc/nginx/sites-available/${subdomain}.conf /etc/nginx/sites-enabled/;\
+          sudo nginx -s reload;"
+      - echo "Application name: ${short_sha}"
+  artifacts:
+    paths:
+      - new_application.log
+
+make_dedicated_server:
+  stage: deploy
+  script:
+    - dos2unix LinuxServer/ThirdTurn_TemplateServer.sh
+    - ssh david@$host "mkdir -p ~/servers/${subdomain}"
+    - scp -r LinuxServer david@$host:~/servers/${subdomain}/${short_sha}
+    - ssh david@$host "\
+        echo \"\
+        [Unit]\
+        Description=Dedicated server for ${subdomain}\
+        Wants=network-online.target\
+        After=network-online.target\
+
+        [Service]\
+        Type=simple\
+        User=david\
+        WorkingDirectory=/home/david/servers/${subdomain}/LinuxServer/\
+        ExecStart=/bin/bash -c 'chmod +x ThirdTurn_TemplateServer.sh && ./ThirdTurn_TemplateServer.sh'\
+        StandardOutput=file:/home/david/servers/${subdomain}/output.log\
+        Restart=always\
+
+        [Install]\
+        WantedBy=multi-user.target\
+        \" > /etc/systemd/system/server_${subdomain};\
+
+        sudo systemctl daemon-reload;\
+        sudo systemctl enable server_${subdomain};\
+        sudo systemctl start server_${subdomain};\
+
+        export port=$(grep -oP 'listening on port \K\d+' /etc/systemd/system/server_${subdomain});\
+        echo $port > /usr/local/bin/dedicated-server-ports/${subdomain}.log"

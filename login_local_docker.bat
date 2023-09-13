@@ -1,0 +1,1 @@
+python sps-app.py config --image-registry https://registry.tenant-palatial-platform.lga1.ingress.coreweave.cloud/v2/ --repository-url registry.tenant-palatial-platform.lga1.ingress.coreweave.cloud --registry-username docker --registry-password 93DQ1cDH6HYwdtT5

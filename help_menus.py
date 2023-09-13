@@ -48,13 +48,13 @@ Example: sps-app reset demo\n\
 Example: sps-app restart demo --tag v0-0-4 --version-name version4")
 
 def show_enable_help():
-  print("Sets the active version to the latest version\n\n\
+  print("Activates an application with its latest version and scales up its components\n\n\
 usage: sps-app enable <branch>\n\n\
 -h, --help      Show help menu\n\n\
 Example: sps-app enable oslodemo")
 
 def show_disable_help():
-  print("Removes the active version\n\n\
+  print("Removes the active version from an application and scales down its components\n\n\
 usage: sps-app disable <branch> [options...]\n\n\
 -h, --help      Show help menu\n\n\
 Example: sps-app disable oslodemo")

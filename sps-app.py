@@ -398,11 +398,15 @@ elif command == "config":
       sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
 
       output = subprocess.run(f"sps-client config delete --name {env_values['SPS_REST_API_SERVER']}", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-      result = output.stdout
-      if output.stderr and "already exists" in output.stderr.decode('utf-8'):
-        result = output.stderr[len("Error: "):]
 
-      print(result.decode('utf-8'))
+      result = output.stdout
+      if output.stderr:
+        result = output.stderr
+
+      result = result.decode('utf-8')
+      if not "already exists" in result:
+        print(result)
+
       subprocess.run(f"sps-client config add --name {env_values['SPS_REST_API_SERVER']} --address {sps_rest_api_address} --access-key " + env_values['API_KEY'])
       subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
 
@@ -454,10 +458,13 @@ elif command == "setup":
   output = subprocess.run(f"sps-client config add --name {env_values['SPS_REST_API_SERVER']} --address {sps_rest_api_address} --access-key " + env_values['API_KEY'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   result = output.stdout
-  if output.stderr and "already exists" in output.stderr.decode('utf-8'):
-    result = output.stderr[len("Error: "):]
 
-  print(result.decode('utf-8'))
+  if output.stderr:
+    result = output.stderr
+
+  result = result.decode('utf-8')
+  if not "already exists" in result:
+    print(result)
   
   subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
   key = generate_ssh_key_pair()

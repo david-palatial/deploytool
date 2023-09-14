@@ -424,13 +424,8 @@ elif command == "setup":
   if not os.path.exists(env_path):
     print(f'downloading into {env_path}...')
     subprocess.run(f'scp {misc.host}:/mnt/unreal-project/.env {exe_path}')
-    print('done')
-    subprocess.run('timeout 3')
 
   env_values = dotenv_values(env_path)
-  for p in env_values.values():
-    print(p)
-  
 
   if len(sys.argv) == 3 and sys.argv[2] == "--stdin":
     server = input(f"Server name [{env_values['SPS_REST_API_SERVER']}]: ")

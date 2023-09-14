@@ -20,7 +20,7 @@ def get_exe_directory():
     exe_path = os.path.dirname(sys.executable)
   else:
     # When running as a script, use the path of the script
-    exe_path = os.path.abspath(__file__)
+    exe_path = os.path.dirname(os.path.abspath(__file__))
 
   # Get the directory of the executable
   exe_directory = os.path.dirname(exe_path)

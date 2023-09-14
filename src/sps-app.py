@@ -421,7 +421,7 @@ elif command == "setup":
     sys.exit(0)
 
   if not os.path.exists(env_path):
-    print('downloading...')
+    print(f'downloading into {env_path}...')
     subprocess.run(f'scp {misc.host}:/mnt/unreal-project/.env {exe_path}')
     print('done')
     subprocess.run('timeout 3')

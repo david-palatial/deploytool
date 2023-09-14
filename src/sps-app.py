@@ -401,10 +401,13 @@ elif command == "config":
       sys.exit(0)
 
     if current_registry_username != env_values['REGISTRY_USERNAME'] and current_repository_url == env_values['REPOSITORY_URL']:
-      new_repo_url = None
-      while not new_repo_url:
-        new_repo_url = input("Enter your new repository url (ex. docker.io/dgodfrey206/): ")
-      env_values['REPOSITORY_URL'] = new_repo_url.trim("/")
+      if "docker" in current_repository_url:
+        env_values['REPOSITORY_URL'] = f'docker.io/{env_values['REGISTRY_USERNAME']}'
+      else:
+        new_repo_url = None
+        while not new_repo_url:
+          new_repo_url = input("Enter your new repository url (ex. docker.io/username/): ")
+        env_values['REPOSITORY_URL'] = new_repo_url.trim("/")
 
     if region != env_values['REGION'] or namespace != env_values['COREWEAVE_NAMESPACE'] or api_server != env_values['SPS_REST_API_SERVER'] or api_key != env_values['API_KEY']:
       sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"

@@ -28,8 +28,7 @@ def get_exe_directory():
 
 exe_path = get_exe_directory()
 env_values = dotenv_values(os.path.join(exe_path, ".env"))
-print('helgfsgllo')
-#host = env_values.get('HOST', 'david@palatial.tenant-palatial-platform.coreweave.cloud')
+host = env_values.get('HOST', 'david@palatial.tenant-palatial-platform.coreweave.cloud')
 
 def file_exists_on_remote(host, remote_file_path):
     try:

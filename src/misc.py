@@ -23,7 +23,7 @@ def get_exe_directory():
     exe_path = os.path.abspath(__file__)
 
   # Get the directory of the executable
-  exe_directory = os.path.dirname(os.path.dirname(exe_path))
+  exe_directory = os.path.dirname(exe_path)
   return exe_directory
 
 exe_path = get_exe_directory()

@@ -402,7 +402,7 @@ elif command == "config":
 
     if current_registry_username != env_values['REGISTRY_USERNAME'] and current_repository_url == env_values['REPOSITORY_URL']:
       if "docker" in current_repository_url:
-        env_values['REPOSITORY_URL'] = f'docker.io/{env_values['REGISTRY_USERNAME']}'
+        env_values['REPOSITORY_URL'] = f"docker.io/{env_values['REGISTRY_USERNAME']}"
       else:
         new_repo_url = None
         while not new_repo_url:

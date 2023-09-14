@@ -450,15 +450,12 @@ elif command == "setup":
 
   if server:
     env_values['SPS_REST_API_SERVER'] = server
-  if username:
-    env_values['REGISTRY_USERNAME'] = username
-  if password:
-    env_values['REGISTRY_PASSWORD'] = password
 
+  env_values['REGISTRY_USERNAME'] = username
+  env_values['REGISTRY_PASSWORD'] = password
   env_values['IMAGE_REGISTRY_API'] = image_registry_api if image_registry_api else default_repo_url
+  env_values['REPOSITORY_URL'] = (repo_url.strip('/') + '/') if repo_url else default_repo_url
 
-  if repo_url:
-    env_values['REPOSITORY_URL'] = repo_url.strip('/') + '/'
   if region:
     env_values['REGION'] = region
   if namespace:

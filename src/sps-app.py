@@ -422,6 +422,7 @@ elif command == "setup":
 
   if not os.path.exists(env_path):
     subprocess.run(f'scp {misc.host}:/mnt/unreal-project/.env {exe_path}')
+    subprocess.run('timeout 3')
 
   env_values = dotenv_values(env_path)
 

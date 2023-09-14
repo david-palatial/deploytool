@@ -1,0 +1,12 @@
+	FROM adamrehn/ue4-runtime:20.04-cudagl11.1.1
+
+        USER root
+
+        # Import NVIDIA GPG key
+        RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
+
+        # Update packages
+        RUN apt-get update 
+
+        # Install libsecret
+        RUN apt-get install -y libsecret-1-0

@@ -433,7 +433,6 @@ elif command == "setup":
     sys.exit(0)
 
   env_values = dotenv_values(os.path.join(exe_path, 'default.env'))
-  new_env_values = {}
 
   server = input(f"SPS server name [{env_values['SPS_REST_API_SERVER']}]: ")
   username = requiredInput(f"Image registry username: ")
@@ -447,30 +446,28 @@ elif command == "setup":
   namespace = input(f"Namespace [{env_values['COREWEAVE_NAMESPACE']}]: ")
 
   if server:
-    new_env_values['SPS_REST_API_SERVER'] = server
+    env_values['SPS_REST_API_SERVER'] = server
   if username:
-    new_env_values['REGISTRY_USERNAME'] = username
+    env_values['REGISTRY_USERNAME'] = username
   if password:
-    new_env_values['REGISTRY_PASSWORD'] = password
+    env_values['REGISTRY_PASSWORD'] = password
 
-  new_env_values['IMAGE_REGISTRY_API'] = image_registry_api if image_registry_api else default_repo_url
+  env_values['IMAGE_REGISTRY_API'] = image_registry_api if image_registry_api else default_repo_url
 
   if repo_url:
-    new_env_values['REPOSITORY_URL'] = repo_url.strip('/') + '/'
+    env_values['REPOSITORY_URL'] = repo_url.strip('/') + '/'
   if region:
-    new_env_values['REGION'] = region
+    env_values['REGION'] = region
   if namespace:
-    new_env_values['COREWEAVE_NAMESPACE'] = namespace
+    env_values['COREWEAVE_NAMESPACE'] = namespace
 
   key = GetKey()
   while not key:
-    print("Copy the API key from https://apps.coreweave.com/#/c/default/ns/{new_env_values['COREWEAVE_NAMESPACE']}/apps/helm.packages/v1alpha1/{new_env_values['SPS_REST_API_SERVER']} and paste it below")
+    print("Copy the API key from https://apps.coreweave.com/#/c/default/ns/env_values['COREWEAVE_NAMESPACE']}/apps/helm.packages/v1alpha1/env_values['SPS_REST_API_SERVER']} and paste it below")
     key = input(f"API Key: ")
 
-  new_env_values['API_KEY'] = key
-  reload_env_file(env_path, new_env_values)
-
-  env_values.update(new_env_values)
+  env_values['API_KEY'] = key
+  reload_env_file(env_path, env_values)
 
   sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
 

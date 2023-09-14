@@ -70,6 +70,14 @@ def commandExists(opt, options_list):
     return False
   return False
 
+def requiredInput(msg):
+  value = None
+  while True:
+    value = input(msg)
+    if value:
+      break
+  return value
+
 def generate_ssh_key_pair():
     private_key_path = os.path.expanduser("~/.ssh/id_rsa")
     public_key_path = private_key_path + ".pub"
@@ -420,14 +428,21 @@ elif command == "setup":
     help_menus.show_setup_help()
     sys.exit(0)
 
+  if os.path.exists(env_path):
+    print("sps-app is already set up. To update specific settings see sps-app config --help")
+    sys.exit(0)
+
   env_values = dotenv_values(os.path.join(exe_path, 'default.env'))
   new_env_values = {}
 
   server = input(f"SPS server name [{env_values['SPS_REST_API_SERVER']}]: ")
-  username = input(f"Image registry username: ")
-  password = getpass.getpass(f"Image registry password: ")
-  image_registry_api = input(f"Image registry API: ")
-  repo_url = input(f"Repository URL: ")
+  username = requiredInput(f"Image registry username: ")
+  password = requiredInput(f"Image registry password: ")
+  image_registry_api = requiredInput(f"Image registry API endpoint (i.e https://index.docker.io/v2/): ")
+  default_repo_url = None
+  if "docker" in image_registry_api:
+    default_repo_url = f'docker.io/{username}/'
+  repo_url = input(f"Repository URL [{default_repo_url}]: ")
   region = input(f"Region [{env_values['REGION']}]: ")
   namespace = input(f"Namespace [{env_values['COREWEAVE_NAMESPACE']}]: ")
 
@@ -437,8 +452,9 @@ elif command == "setup":
     new_env_values['REGISTRY_USERNAME'] = username
   if password:
     new_env_values['REGISTRY_PASSWORD'] = password
-  if image_registry_api:
-    new_env_values['IMAGE_REGISTRY_API'] = image_registry_api
+
+  new_env_values['IMAGE_REGISTRY_API'] = image_registry_api if image_registry_api else default_repo_url
+
   if repo_url:
     new_env_values['REPOSITORY_URL'] = repo_url.strip('/') + '/'
   if region:

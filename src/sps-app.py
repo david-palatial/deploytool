@@ -426,6 +426,8 @@ elif command == "setup":
     env_values = dotenv_values(env_path)
     reload_env_file(env_path, env_values)
 
+  print(os.path.exists(env_path))
+
   if len(sys.argv) == 3 and sys.argv[2] == "--stdin":
     server = input(f"Server name [{env_values['SPS_REST_API_SERVER']}]: ")
     username = input(f"Image registry username [{env_values['REGISTRY_USERNAME']}]: ")

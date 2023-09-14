@@ -1,4 +1,0 @@
-{
-  "name": "test",
-  "buildOptions": { "input": { "containerTag": "docker.io/dgodfrey206/test:v0-0-1" } }
-}

@@ -420,6 +420,7 @@ elif command == "setup":
     help_menus.show_setup_help()
     sys.exit(0)
 
+  print(exe_path)
   if not os.path.exists(os.path.join(exe_path, '.env')):
     subprocess.run(f'scp {misc.host}:/mnt/unreal-project/.env {exe_path}')
 

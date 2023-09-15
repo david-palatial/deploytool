@@ -425,6 +425,7 @@ elif command == "config":
       subprocess.run(f"sps-client config add --name {env_values['SPS_REST_API_SERVER']} --address {sps_rest_api_address} --access-key " + env_values['API_KEY'])
       subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
 
+    env_values['REPOSITORY_URL'] = env_values['REPOSITORY_URL'].strip('/')
     reload_env_file(env_path, env_values)
 elif command == "setup":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):

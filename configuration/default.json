@@ -14,7 +14,8 @@
       "instanceManager": {
         "customEndpoints": [
           "instance-customisation-plugin.tenant-palatial-platform.svc.cluster.local:55774"
-        ]
+        ],
+	"pluginOptions": "hello"
       }
     }
   }

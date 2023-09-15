@@ -454,7 +454,7 @@ elif command == "setup":
   env_values['REGISTRY_USERNAME'] = username
   env_values['REGISTRY_PASSWORD'] = password
   env_values['IMAGE_REGISTRY_API'] = image_registry_api if image_registry_api else default_repo_url
-  env_values['REPOSITORY_URL'] = (repo_url.strip('/') + '/') if repo_url else default_repo_url
+  env_values['REPOSITORY_URL'] = repo_url.strip('/') if repo_url else default_repo_url
 
   if region:
     env_values['REGION'] = region

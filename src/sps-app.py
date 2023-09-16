@@ -532,10 +532,19 @@ elif command == "disable":
     print(f"error: {app} does not exist")
     sys.exit(1)
 
-  subprocess.run(f'kubectl scale statefulset sps-signalling-server-{app} --replicas=0')
-  subprocess.run(f'kubectl scale deployment sps-auth-{app} --replicas=0')
-  subprocess.run(f'kubectl scale deployment sps-instance-manager-{app} --replicas=0')
+  print(f'statefulset.apps/sps-signalling-server-{app} scaled')
+  subprocess.run(f'kubectl scale statefulset sps-signalling-server-{app} --replicas=0', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  
+  print(f'deployment.apps/sps-auth-{app} scaled')
+  subprocess.run(f'kubectl scale deployment sps-auth-{app} --replicas=0', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+  print(f'deployment.apps/sps-instance-manager-{app} scaled')
+  subprocess.run(f'kubectl scale deployment sps-instance-manager-{app} --replicas=0', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
   subprocess.run(f"sps-client application update -n {app} --activeVersion \"\"", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+  print(f"Stopping unit server_{app}.service...")
+  subprocess.run(f'ssh {misc.host} sudo systemctl stop server_{app}')
 
 elif command == "enable":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
@@ -562,9 +571,17 @@ elif command == "enable":
   latest_datetime_index = datetime_objects.index(latest_datetime)
 
   subprocess.run(f'sps-client application update -n {app} --activeVersion {versions[latest_datetime_index]["name"]}', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  subprocess.run(f'kubectl scale deployment sps-auth-{app} --replicas=1')
-  subprocess.run(f'kubectl scale deployment sps-instance-manager-{app} --replicas=1')
-  subprocess.run(f'kubectl scale statefulset sps-signalling-server-{app} --replicas=1')
+
+  print(f'deployment.apps/sps-instance-manager-{app} scaled')
+  subprocess.run(f'kubectl scale deployment sps-instance-manager-{app} --replicas=1', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+  print(f'deployment.apps/sps-auth-{app} scaled')
+  subprocess.run(f'kubectl scale deployment sps-auth-{app} --replicas=1', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+  print(f'statefulset.apps/sps-signalling-server-{app} scaled')
+  subprocess.run(f'kubectl scale statefulset sps-signalling-server-{app} --replicas=1', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  print(f"Starting unit server_{app}.service...")
+  subprocess.run(f'ssh {misc.host} sudo systemctl start server_{app}')
 elif command == "create-link":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_createLink_help()

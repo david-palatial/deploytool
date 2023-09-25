@@ -214,7 +214,7 @@ def write_to_remote(file_path, data):
   subprocess.run('scp {}.copy {}:~/.tmp/'.format(tmp, host), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   subprocess.run('ssh {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, file_path), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-def build_docker_image(branch, image_tag, dockerfile_path, is_client=True):
+def build_docker_image(branch, image_tag, is_client=True):
     # Get the current working directory
     current_directory = os.getcwd()
 
@@ -228,7 +228,6 @@ def build_docker_image(branch, image_tag, dockerfile_path, is_client=True):
         folder_type = "Client"
 
     # Add dependencies if image tag does not exist
-
     client = None
     try:
         client = docker.from_env()
@@ -259,16 +258,10 @@ RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/
 
 USER ue4
 
-# Copy the packaged project files from the build context
-COPY --chown=ue4:ue4 "./Linux{folder_type}" /home/ue4/project
+COPY --chown=ue4:ue4 . /home/ue4/project
 
-# Ensure the project's startup script is executable
 RUN chmod +x "/home/ue4/project/ThirdTurn_Template{folder_type}.sh"
 
-RUN ln -s /usr/lib/x86_64-linux-gnu/libsecret-1.so.0 /home/ue4/project/Palatial_V01_UE51/Binaries/Linux/libsecret-1.so.0
-RUN ls -al /home/ue4/project/
-
-# Set the project's startup script as the container's entrypoint
 ENTRYPOINT ["/usr/bin/entrypoint.sh", "/home/ue4/project/ThirdTurn_Template{folder_type}.sh"]
     """
 
@@ -286,15 +279,15 @@ RUN chmod +x "/LinuxServer/ThirdTurn_TemplateServer.sh"
 ENTRYPOINT ["bash", "/LinuxServer/ThirdTurn_TemplateServer.sh"]
 """
 
-    with open(os.path.join(dockerfile_path, "Dockerfile"), "w") as f:
+    with open("Dockerfile", "w") as f:
         f.write(ClientDockerfile if is_client else ServerDockerfile)
 
-    os.system(f'docker build -t {env_values["REPOSITORY_URL"]}/{image_tag} "{dockerfile_path}"')
+    os.system(f'docker build -t {env_values["REPOSITORY_URL"]}/{image_tag} .')
     os.system(f"docker tag {env_values['REPOSITORY_URL']}/{image_tag} {env_values['REPOSITORY_URL']}/{branch}:latest")
     os.system(f"docker push {env_values['REPOSITORY_URL']}/{image_tag}")
     os.system(f"docker push {env_values['REPOSITORY_URL']}/{branch}:latest")
 
-    os.remove(os.path.join(dockerfile_path, "Dockerfile"))
+    os.remove("Dockerfile")
 
 def save_version_info(branch, data={}, client=True):
   print("Saving version info...")
@@ -332,8 +325,9 @@ def save_version_info(branch, data={}, client=True):
   else:
     image_tag = f'server-{branch}:{version}'
 
+  #os.chdir("LinuxServer")
   #print("Building and pushing dedicated server docker image:")
-  #build_docker_image(f"server-{branch}", image_tag, os.getcwd(), is_client=False)
+  #build_docker_image(f"server-{branch}", image_tag, is_client=False)
 
   info = {
     "branch": branch,

@@ -407,7 +407,7 @@ def deploy(argv):
           "uploader": { "sourceDirectory": os.path.dirname(dir_name) }
         }
 
-        misc.save_version_info(branch, appInfo, client=True)
+        #misc.save_version_info(branch, appInfo, client=True)
         os.chdir("..")
 
     if not app_only:

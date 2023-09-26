@@ -253,7 +253,11 @@ def build_docker_image(branch, image_tag, is_client=True):
     ClientDockerfile = f"""
 FROM adamrehn/ue4-runtime:20.04-cudagl11.1.1
 
-LABEL PROJECT_ID="{branch}"
+LABEL projectId="{branch}"
+LABEL version="{image_tag.split(':')[1]}"
+LABEL hostName="{socket.gethostname()}"
+LABEL ipAddress="{get_public_ip()}"
+LABEL command="{' '.join(sys.argv)}"
 
 # Install our additional packages
 USER root

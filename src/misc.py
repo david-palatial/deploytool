@@ -214,7 +214,15 @@ def write_to_remote(file_path, data):
   subprocess.run('scp {}.copy {}:~/.tmp/'.format(tmp, host), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   subprocess.run('ssh {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, file_path), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+def dict_to_string(data):
+    result = ""
+    for key, value in data.items():
+        result += f"{key}={value}\n"
+    return result
+
 def build_docker_image(branch, image_tag, is_client=True):
+    current_datetime = datetime.now()
+
     # Get the current working directory
     current_directory = os.getcwd()
 
@@ -244,6 +252,8 @@ def build_docker_image(branch, image_tag, is_client=True):
 
     ClientDockerfile = f"""
 FROM adamrehn/ue4-runtime:20.04-cudagl11.1.1
+
+LABEL PROJECT_ID="{branch}"
 
 # Install our additional packages
 USER root

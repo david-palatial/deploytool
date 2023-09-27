@@ -374,7 +374,7 @@ def deploy(argv):
         image_tag = f"{branch}:{version}"
 
         if use_firebase:
-            misc.build_docker_image(branch, image_tag)
+            misc.build_docker_image(branch, image_tag=image_tag, is_client=True, owner=owner)
         else:
             opt = ""
             

@@ -220,7 +220,7 @@ def dict_to_string(data):
         result += f"{key}={value}\n"
     return result
 
-def build_docker_image(branch, image_tag, is_client=True):
+def build_docker_image(branch, image_tag, is_client=True, owner=None):
     current_datetime = datetime.now()
 
     # Get the current working directory
@@ -250,6 +250,10 @@ def build_docker_image(branch, image_tag, is_client=True):
         registry=env_values['IMAGE_REGISTRY_API'],
     )
 
+    application = ""
+    if owner:
+      application = branch
+
     ClientDockerfile = f"""
 FROM adamrehn/ue4-runtime:20.04-cudagl11.1.1
 
@@ -258,6 +262,7 @@ LABEL version="{image_tag.split(':')[1]}"
 LABEL hostName="{socket.gethostname()}"
 LABEL ipAddress="{get_public_ip()}"
 LABEL command="{' '.join(sys.argv)}"
+LABEL streamURL="https://{owner if owner else branch}.palatialxr.com/{application if application else ''}"
 
 # Install our additional packages
 USER root

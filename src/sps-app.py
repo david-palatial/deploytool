@@ -235,7 +235,7 @@ elif command == "reset" or command == "restart":
   deployhelpers.reset_application(branch, version=version, container_tag=container_tag)
 
   data = { "uploader": { "sourceDirectory": "n/a" } }
-  misc.save_version_info(branch, data, client=True)
+  #misc.save_version_info(branch, data, client=True)
 
 elif command == "delete":
   if len(sys.argv) < 3 or "-h" in sys.argv or "--help" in sys.argv:
@@ -308,7 +308,7 @@ elif command == "create":
     deployhelpers.set_new_version(branch, version, container_tag=f'{env_values["REPOSITORY_URL"]}/{repo}:{tag}')
 
     data = { "uploader": { "sourceDirectory": "n/a" } }
-    misc.save_version_info(branch, data, client=True)
+    #misc.save_version_info(branch, data, client=True)
 
 elif command == "update":
   if len(sys.argv) < 3:

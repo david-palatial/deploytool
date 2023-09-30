@@ -588,17 +588,21 @@ elif command == "create-link":
     sys.exit(0)
   app = sys.argv[2]
   owner = None
+
+  command = f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py --application {app} '
+
   if "--owner" in sys.argv:
     idx = sys.argv.index("--owner")
     if idx + 1 >= len(sys.argv):
       print("error: --owner must have an argument")
       sys.exit(1)
-    owner = sys.argv[idx + 1]
-  
-  args = app
-  if owner:
-    args = owner + " " + args
-  subprocess.run(f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py {args}')
+    command += f'--branch {sys.argv[idx + 1]} '
+  if "-C" in sys.argv or "-A" in sys.argv:
+    command += '-C '
+  if "-S" in sys.argv:
+    command += '-S '
+
+  subprocess.run(command)
 else:
   for i in range(1, len(sys.argv)):
     opt = sys.argv[i]

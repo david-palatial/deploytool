@@ -445,10 +445,14 @@ def deploy(argv):
         misc.save_version_info(branch, data, client=False)
 
     if create_link:
-      args = branch
+      command = f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py --application {branch} '
       if owner:
-        args = owner + " " + args
+        command += f'--branch {owner} '
+      if app_only:
+        command += '-A '
+      if server_only:
+        command += '-S'
 
-      subprocess.run(f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py {args}')
+      subprocess.run(command)
 
     print("FINISHED")

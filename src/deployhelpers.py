@@ -79,7 +79,7 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
       "name": version,
       "buildOptions": {
         "input": {
-          "containerTag": container_tag
+          "containerTag": "docker.io/dgodfrey206/demo:23-07-18-build-b-cd-tankhousedemo"
         },
         "credentials": {
           "registry": env_values['IMAGE_REGISTRY_API'],
@@ -449,7 +449,7 @@ def deploy(argv):
       if owner:
         command += f'--branch {owner} '
       if app_only:
-        command += '-A '
+        command += '-C '
       if server_only:
         command += '-S'
 

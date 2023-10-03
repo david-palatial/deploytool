@@ -444,7 +444,7 @@ elif command == "setup":
   image_registry_api = requiredInput(f"Image registry API endpoint (i.e https://index.docker.io/v2/): ")
   default_repo_url = None
   if "docker" in image_registry_api:
-    default_repo_url = f'docker.io/{username}/'
+    default_repo_url = f'docker.io/{username}'
   repo_url = input(f"Repository URL [{default_repo_url}]: ")
   region = input(f"Region [{env_values['REGION']}]: ")
   namespace = input(f"Namespace [{env_values['COREWEAVE_NAMESPACE']}]: ")

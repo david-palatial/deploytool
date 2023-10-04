@@ -168,6 +168,7 @@ def process_config_argument(args, opt, envVar, i, len):
         sys.exit(0)
       else:
         env_values[envVar] = args[i+1]
+        print(envVar + " set to " + args[i+1])
 
 if len(sys.argv) < 2 or sys.argv[1] not in ["deploy", "reset", "update", "delete", "create", "restart-server", "shell", "config", "setup", "restart-webpage", "restart", "version-info", "enable", "disable", "create-link"]:
   help_menus.show_spsApp_help()

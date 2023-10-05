@@ -97,7 +97,7 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
 
     while data["statusCode"] != 200 and count != 3:
       if data["statusCode"] == 422:
-        print("error: " + data["message"])
+        print("error: " + data["response"]["message"])
         sys.exit(1)
       print("Retrying...")
       subprocess.check_output("timeout 2")

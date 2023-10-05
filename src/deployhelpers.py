@@ -79,7 +79,7 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
       "name": version,
       "buildOptions": {
         "input": {
-          "containerTag": "docker.io/dgodfrey206/demo:23-07-18-build-b-cd-tankhousedemo"
+          "containerTag": container_tag
         },
         "credentials": {
           "registry": env_values['IMAGE_REGISTRY_API'],

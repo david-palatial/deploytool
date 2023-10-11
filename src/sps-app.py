@@ -594,7 +594,7 @@ elif command == "create-link":
 
   command = f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py --application {app} '
 
-  str = "--owner":
+  str = "--owner"
   idx = -1
   if "--owner" in sys.argv:
     idx = sys.argv.index(str)

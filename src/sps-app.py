@@ -433,7 +433,9 @@ elif command == "setup":
     help_menus.show_setup_help()
     sys.exit(0)
 
-  if os.path.exists(env_path):
+  force = len(sys.argv) == 3 and sys.argv[2] == "-f"
+
+  if not force and os.path.exists(env_path):
     print("sps-app is already set up. To update specific settings see sps-app config --help")
     sys.exit(0)
 
@@ -592,12 +594,19 @@ elif command == "create-link":
 
   command = f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py --application {app} '
 
+  str = "--owner":
+  idx = -1
   if "--owner" in sys.argv:
-    idx = sys.argv.index("--owner")
-    if idx + 1 >= len(sys.argv):
-      print("error: --owner must have an argument")
-      sys.exit(1)
-    command += f'--branch {sys.argv[idx + 1]} '
+    idx = sys.argv.index(str)
+  elif "--branch" in sys.argv:
+    str = "--branch"
+    idx = sys.argv.index(str)
+
+  if idx + 1 >= len(sys.argv):
+    print(f"error: {str} must have an argument")
+    sys.exit(1)
+
+  command += f'--branch {sys.argv[idx + 1]} '
   if "-C" in sys.argv or "-A" in sys.argv:
     command += '-C '
   if "-S" in sys.argv:

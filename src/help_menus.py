@@ -131,6 +131,7 @@ def show_setup_help():
   print("Sets up Scalable Pixel Streaming CLI tools and generates an SSH key pair.\n\n\
 usage: sps-app setup\n\n\
     --stdin  Enter all config values manually\n\
+    --force  Call the setup routine even if already initialized\n\
 -h, --help   Show help menu\n\n\
 Example: sps-app setup");
 
@@ -143,6 +144,6 @@ Example: sps-app version-info oslodemo")
 def show_createLink_help():
   print("Creates and returns a URL to a web server that runs the given application\n\n\
 usage: sps-app create-link <application> [options...]\n\n\
-    --owner     The subdomain that the application belongs to (i.e test)\n\
--h, --help      Show help menu\n\n\
+    --owner, --branch     The subdomain that the application belongs to (i.e test)\n\
+-h, --help                Show help menu\n\n\
 Example: sps-app create-link oslodemo")

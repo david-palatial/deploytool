@@ -465,7 +465,7 @@ elif command == "setup":
 
   key = GetKey()
   while not key:
-    print(f"Copy the API key from https://apps.coreweave.com/#/c/default/ns/env_values['COREWEAVE_NAMESPACE']}/apps/helm.packages/v1alpha1/env_values['SPS_REST_API_SERVER']} and paste it below")
+    print(f"Copy the API key from https://apps.coreweave.com/#/c/default/ns/{env_values['COREWEAVE_NAMESPACE']}/apps/helm.packages/v1alpha1/{env_values['SPS_REST_API_SERVER']} and paste it below")
     key = input(f"API Key: ")
 
   env_values['API_KEY'] = key

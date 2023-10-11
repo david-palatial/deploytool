@@ -116,7 +116,6 @@ def try_get_application(name):
       prefix = "Error: "
       json_data = output.stderr[len(prefix):]
 
-    print("Name: " + name, json_data)
     json_data = json_data.decode('utf-8')
 
     data = json.loads(json_data)

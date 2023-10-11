@@ -131,7 +131,7 @@ def show_setup_help():
   print("Sets up Scalable Pixel Streaming CLI tools and generates an SSH key pair.\n\n\
 usage: sps-app setup\n\n\
     --stdin  Enter all config values manually\n\
-    --force  Call the setup routine even if already initialized\n\
+-f, --force  Call the setup routine even if already initialized\n\
 -h, --help   Show help menu\n\n\
 Example: sps-app setup");
 

@@ -433,7 +433,7 @@ elif command == "setup":
     help_menus.show_setup_help()
     sys.exit(0)
 
-  force = len(sys.argv) == 3 and sys.argv[2] == "-f"
+  force = len(sys.argv) == 3 and (sys.argv[2] == "-f" or sys.argv[2] == "--force")
 
   if not force and os.path.exists(env_path):
     print("sps-app is already set up. To update specific settings see sps-app config --help")

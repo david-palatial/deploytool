@@ -93,6 +93,7 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
 
     command = f'sps-client version create -a {branch} --name {version} -f {temp_file}'
     count = 1
+
     data = misc.get_sps_json_output(command)
 
     while data["statusCode"] != 200 and count != 3:

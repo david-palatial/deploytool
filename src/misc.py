@@ -257,6 +257,8 @@ def build_docker_image(branch, image_tag, is_client=True, owner=None):
     ClientDockerfile = f"""
 FROM adamrehn/ue4-runtime:20.04-cudagl11.1.1
 
+LABEL sourceDirectory="{os.path.dirname(os.getcwd())}"
+LABEL timeCreated="{datetime.now().strftime("%Y%m%d_%H_%M_%S")}"
 LABEL projectId="{branch}"
 LABEL version="{image_tag.split(':')[1]}"
 LABEL hostName="{socket.gethostname()}"

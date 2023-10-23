@@ -589,24 +589,16 @@ elif command == "create-link":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_createLink_help()
     sys.exit(0)
-  app = sys.argv[2]
-  owner = None
 
-  command = f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py --application {app} '
+  url = sys.argv[2]
 
-  str = "--owner"
-  idx = -1
-  if "--owner" in sys.argv:
-    idx = sys.argv.index(str)
-  elif "--branch" in sys.argv:
-    str = "--branch"
-    idx = sys.argv.index(str)
+  if url.startswith('http://'):
+    url = url[len('http://'):]
+  if url.startswith('https://'):
+    url = url[len('https://'):]
 
-  if idx + 1 >= len(sys.argv):
-    print(f"error: {str} must have an argument")
-    sys.exit(1)
+  command = f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py --application {url} '
 
-  command += f'--branch {sys.argv[idx + 1]} '
   if "-C" in sys.argv or "-A" in sys.argv:
     command += '-C '
   if "-S" in sys.argv:

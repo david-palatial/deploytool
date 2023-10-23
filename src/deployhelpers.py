@@ -446,9 +446,11 @@ def deploy(argv):
         misc.save_version_info(branch, data, client=False)
 
     if create_link:
-      command = f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py --application {branch} '
+      command = f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py '
       if owner:
-        command += f'--branch {owner} '
+        command += f'https://{owner}.palatialxr.com/{branch} '
+      else:
+        command += f'https://{branch}.palatialxr.com '
       if app_only:
         command += '-C '
       if server_only:

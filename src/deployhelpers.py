@@ -21,6 +21,13 @@ import tempfile
 import shutil
 import socket
 from dotenv import dotenv_values
+import pymongo
+from bson import ObjectId
+import requests
+
+client = pymongo.MongoClient('mongodb://palatial:0UDUiKxwj7fI0@mongodb.mithyalabs.com:27017/palatial?directConnection=true&authSource=staging_db')
+db = client["palatial"]
+collection = db["changelogs"]
 
 exe_path = misc.get_exe_directory()
 env_values = dotenv_values(os.path.join(exe_path, ".env"))
@@ -351,7 +358,7 @@ def deploy(argv):
     if branch == None:
         branch = misc.generate_random_string()
 
-    branch = branch.replace('_', '-').replace('.', '-').lower()
+    branch = branch[:15].replace('_', '-').replace('.', '-').lower()
 
     os.chdir(dir_name)
 
@@ -402,6 +409,18 @@ def deploy(argv):
               print("Finishing up. . . ", end="")
               sys.stdout.flush()
               misc.wait_for_status(branch, "Running", msg=". ")
+
+              url = "https://api.palatialxr.com/v1/k8s-components"
+              projectData = { name: branch }
+              response = requests.post(url, json=projectData).json()
+
+              data = {
+                  event: "import complete",
+                  subjectId: f"ObjectId({branch})",
+                  subjectType: "projects",
+                  podComponents: response
+              }
+              collection.insert_one(data)
 
         appInfo = {
           "customDockerBuild": use_firebase,

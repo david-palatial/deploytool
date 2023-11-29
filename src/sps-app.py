@@ -44,13 +44,13 @@ def GetKey():
     '''
 
   # Execute PowerShell code using subprocess
-  result = subprocess.run(['powershell', '-Command', ps_code], capture_output=True, text=True)
+  result = subprocess.run(['powershell', '-Command', ps_code], stdout=subprocess.PIPE)
 
   # Check the result
   if result.returncode == 0:
     # PowerShell command executed successfully
+    print("output = " + result.stdout)
     output = result.stdout.strip()
-    print("output = " + output)
     return output
   return None
 

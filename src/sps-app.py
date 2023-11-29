@@ -50,6 +50,7 @@ def GetKey():
   if result.returncode == 0:
     # PowerShell command executed successfully
     output = result.stdout.strip()
+    print("output = " + output)
     return output
   return None
 

@@ -47,7 +47,7 @@ def GetKey():
   if result.returncode == 0:
     # PowerShell command executed successfully
     output = result.stdout.strip()
-    return output
+    return output.decode('utf-8')
   return None
 
 def tag_has_repo(tag):
@@ -470,8 +470,7 @@ elif command == "setup":
 
   env_values['API_KEY'] = key
   reload_env_file(env_path, env_values)
-  print("Hello")
-
+  print(key)
   sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
 
   subprocess.run(f"image-builder auth --username {env_values['REGISTRY_USERNAME']} --password {env_values['REGISTRY_PASSWORD']} --registry {env_values['IMAGE_REGISTRY_API']}")

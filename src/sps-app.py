@@ -473,6 +473,7 @@ elif command == "setup":
 
   env_values['API_KEY'] = key
   reload_env_file(env_path, env_values)
+  print("Hello")
 
   sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
 

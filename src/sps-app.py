@@ -38,10 +38,7 @@ def download_kubectl():
   subprocess.run(powershell_cmd, shell=True)
 
 def GetKey():
-  ps_code = r'''
-    $base64 = (kubectl get secrets/sps-api-access-key --template='{{.data.restapiaccesskey}}')
-    [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($base64))
-    '''
+  ps_code = r'[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String((kubectl get secrets/sps-api-access-key --template='{{.data.restapiaccesskey}}')))'
 
   # Execute PowerShell code using subprocess
   result = subprocess.run(['powershell', '-Command', ps_code], stdout=subprocess.PIPE)

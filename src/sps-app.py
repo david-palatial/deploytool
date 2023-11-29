@@ -41,7 +41,7 @@ def GetKey():
   ps_code = r"[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String((kubectl get secrets/sps-api-access-key --template='{{.data.restapiaccesskey}}')))"
 
   # Execute PowerShell code using subprocess
-  result = subprocess.run(['powershell', '-Command', ps_code], capture_output=True, Text=True, executable="powershell.exe")
+  result = subprocess.run(['powershell', '-Command', ps_code], capture_output=True, executable="powershell.exe")
 
   # Check the result
   if result.returncode == 0:

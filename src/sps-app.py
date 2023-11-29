@@ -49,7 +49,7 @@ def GetKey():
   # Check the result
   if result.returncode == 0:
     # PowerShell command executed successfully
-    print("output = " + result.stdout)
+    print("output = " + result.stdout.decode('utf-8'))
     output = result.stdout.strip()
     return output
   return None

@@ -416,7 +416,7 @@ def deploy(argv):
 
               data = {
                   "event": "import complete",
-                  "subjectId": str(ObjectId(branch)),
+                  "subjectId": "null", #str(ObjectId(branch)),
                   "subjectType": "projects",
                   "podComponents": response["data"]
               }

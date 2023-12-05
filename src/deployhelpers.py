@@ -411,14 +411,14 @@ def deploy(argv):
               misc.wait_for_status(branch, "Running", msg=". ")
 
               url = "https://api.palatialxr.com/v1/k8s-components"
-              projectData = { name: branch }
+              projectData = { "name": branch }
               response = requests.post(url, json=projectData).json()
 
               data = {
                   event: "import complete",
                   subjectId: str(ObjectId(branch)),
                   subjectType: "projects",
-                  podComponents: response
+                  podComponents: response["data"]
               }
               collection.insert_one(data)
 

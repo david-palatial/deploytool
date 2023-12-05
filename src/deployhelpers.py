@@ -415,10 +415,10 @@ def deploy(argv):
               response = requests.post(url, json=projectData).json()
 
               data = {
-                  event: "import complete",
-                  subjectId: str(ObjectId(branch)),
-                  subjectType: "projects",
-                  podComponents: response["data"]
+                  "event": "import complete",
+                  "subjectId": str(ObjectId(branch)),
+                  "subjectType": "projects",
+                  "podComponents": response["data"]
               }
               collection.insert_one(data)
 

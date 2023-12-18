@@ -244,11 +244,11 @@ def build_docker_image(branch, image_tag, is_client=True, owner=None):
         print("error: Docker Desktop is not running.")
         sys.exit(1)
 
-    #client.login(
-    #    username=env_values['REGISTRY_USERNAME'],
-    #    password=env_values['REGISTRY_PASSWORD'],
-    #    registry=env_values['IMAGE_REGISTRY_API'],
-    #)
+    client.login(
+        username=env_values['REGISTRY_USERNAME'],
+        password=env_values['REGISTRY_PASSWORD'],
+        registry=env_values['IMAGE_REGISTRY_API'],
+    )
 
     application = ""
     if owner:

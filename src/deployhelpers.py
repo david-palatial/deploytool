@@ -73,7 +73,7 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
     if existingVersions and version in existingVersions:
       switch_active_version(branch, version)
       return
-    print("Before: " + container_tag)
+
     if container_tag == None:
       container_tag = f"{env_values['REPOSITORY_URL']}/{branch}:{version}"
     if resetting == True:
@@ -98,7 +98,6 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
     }
 
     tmp, temp_file, json_data = generate_config_file(branch, default_config, container_tag, owner=owner)
-    print(json.dumps(json_data, indent=2))
 
     command = f'sps-client version create -a {branch} --name {version} -f {temp_file}'
     count = 1

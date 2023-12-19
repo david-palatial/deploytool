@@ -303,7 +303,6 @@ elif command == "create":
       else:
         version = misc.increment_version(highestVersion)
 
-    print(branch, repo, tag)
     deployhelpers.set_new_version(branch, version, container_tag=f'{env_values["REPOSITORY_URL"]}/{repo}:{tag}')
 
     data = { "uploader": { "sourceDirectory": "n/a" } }

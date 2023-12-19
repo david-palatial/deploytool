@@ -97,6 +97,7 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
     }
 
     tmp, temp_file, json_data = generate_config_file(branch, default_config, container_tag, owner=owner)
+    print(json.loads(json_data, indent=2))
 
     command = f'sps-client version create -a {branch} --name {version} -f {temp_file}'
     count = 1

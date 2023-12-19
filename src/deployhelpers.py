@@ -416,7 +416,7 @@ def deploy(argv):
               response = requests.post(url, json=projectData).json()
 
               data = {
-                  "event": "import complete",
+                  "event": "importComplete",
                   "subjectId": "null", #str(ObjectId(branch)),
                   "subjectType": "projects",
                   "podComponents": response["data"]

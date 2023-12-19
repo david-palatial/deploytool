@@ -86,6 +86,8 @@ def generate_ssh_key_pair():
         with open(public_key_path, "r") as f:
           key = f.read()
         return key
+    else:
+        os.makedirs(os.path.dirname(private_key_path), exist_ok=True)
  
     # Generate a new key pair
     from cryptography.hazmat.primitives.asymmetric import rsa

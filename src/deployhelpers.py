@@ -73,6 +73,7 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
     if existingVersions and version in existingVersions:
       switch_active_version(branch, version)
       return
+    print("Before: " + container_tag)
     if container_tag == None:
       container_tag = f"{env_values['REPOSITORY_URL']}/{branch}:{version}"
     if resetting == True:

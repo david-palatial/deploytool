@@ -81,7 +81,7 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
         subprocess.run(f"sps-client version delete --name {version} --application {branch}")
 
     print("Creating new version...")
-    subprocess.check_output("timeout 2")
+    subprocess.run("timeout 2")
 
     default_config = {
       "name": version,
@@ -109,7 +109,7 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
         print("error: " + data["response"]["message"])
         sys.exit(1)
       print("Retrying...")
-      subprocess.check_output("timeout 2")
+      subprocess.run("timeout 2")
       data = misc.get_sps_json_output(command)
       count += 1
 

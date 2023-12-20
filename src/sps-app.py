@@ -439,11 +439,10 @@ elif command == "setup":
     sys.exit(0)
 
   env_values = dotenv_values(os.path.join(exe_path, 'default.env'))
+  key = GetKey()
 
   username = requiredInput(f"Image registry username: ")
   password = requiredInput(f"Image registry password: ")
-
-  key = GetKey()
   
   while not key:
     print(f"Copy the API key from https://apps.coreweave.com/#/c/default/ns/{env_values['COREWEAVE_NAMESPACE']}/apps/helm.packages/v1alpha1/{env_values['SPS_REST_API_SERVER']} and paste it below")

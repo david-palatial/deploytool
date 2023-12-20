@@ -443,6 +443,12 @@ elif command == "setup":
   username = requiredInput(f"Image registry username: ")
   password = requiredInput(f"Image registry password: ")
 
+  key = GetKey()
+  
+  while not key:
+    print(f"Copy the API key from https://apps.coreweave.com/#/c/default/ns/{env_values['COREWEAVE_NAMESPACE']}/apps/helm.packages/v1alpha1/{env_values['SPS_REST_API_SERVER']} and paste it below")
+    key = input(f"API Key: ")
+
   server = input(f"SPS server name [{env_values['SPS_REST_API_SERVER']}]: ")
   image_registry_api = input(f"Image registry API endpoint [{env_values['IMAGE_REGISTRY_API']}]: ")
 
@@ -467,12 +473,6 @@ elif command == "setup":
     env_values['REGION'] = region
   if namespace:
     env_values['COREWEAVE_NAMESPACE'] = namespace
-
-  key = GetKey()
-  
-  while not key:
-    print(f"Copy the API key from https://apps.coreweave.com/#/c/default/ns/{env_values['COREWEAVE_NAMESPACE']}/apps/helm.packages/v1alpha1/{env_values['SPS_REST_API_SERVER']} and paste it below")
-    key = input(f"API Key: ")
 
   env_values['API_KEY'] = key
   reload_env_file(env_path, env_values)

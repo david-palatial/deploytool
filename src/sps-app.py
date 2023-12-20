@@ -440,12 +440,17 @@ elif command == "setup":
 
   env_values = dotenv_values(os.path.join(exe_path, 'default.env'))
 
-  server = input(f"SPS server name [{env_values['SPS_REST_API_SERVER']}]: ")
   username = requiredInput(f"Image registry username: ")
   password = requiredInput(f"Image registry password: ")
-  image_registry_api = requiredInput(f"Image registry API endpoint (i.e https://index.docker.io/v2/): ")
+
+  server = input(f"SPS server name [{env_values['SPS_REST_API_SERVER']}]: ")
+  image_registry_api = input(f"Image registry API endpoint [{env_values['IMAGE_REGISTRY_API']}]: ")
+
+  if image_registry_api:
+    env_values['IMAGE_REGISTRY_API'] = image_registry_api
+
   default_repo_url = None
-  if "docker" in image_registry_api:
+  if "docker" in env_values['IMAGE_REGISTRY_API']:
     default_repo_url = f'docker.io/{username}'
   repo_url = input(f"Repository URL [{default_repo_url}]: ")
   region = input(f"Region [{env_values['REGION']}]: ")
@@ -456,7 +461,6 @@ elif command == "setup":
 
   env_values['REGISTRY_USERNAME'] = username
   env_values['REGISTRY_PASSWORD'] = password
-  env_values['IMAGE_REGISTRY_API'] = image_registry_api if image_registry_api else default_repo_url
   env_values['REPOSITORY_URL'] = repo_url.strip('/') if repo_url else default_repo_url
 
   if region:
@@ -472,7 +476,7 @@ elif command == "setup":
 
   env_values['API_KEY'] = key
   reload_env_file(env_path, env_values)
-  print(key)
+
   sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
 
   subprocess.run(f"image-builder auth --username {env_values['REGISTRY_USERNAME']} --password {env_values['REGISTRY_PASSWORD']} --registry {env_values['IMAGE_REGISTRY_API']}")

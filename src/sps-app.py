@@ -595,12 +595,6 @@ elif command == "create-link":
 
   url = sys.argv[2]
 
-  if url.startswith('http://'):
-    url = url[len('http://'):]
-  if url.startswith('https://'):
-    url = url[len('https://'):]
-
-  print(url)
   command = f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py {url} '
 
   if "-C" in sys.argv or "-A" in sys.argv:

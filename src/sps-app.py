@@ -600,6 +600,7 @@ elif command == "create-link":
   if url.startswith('https://'):
     url = url[len('https://'):]
 
+  print(url)
   command = f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py {url} '
 
   if "-C" in sys.argv or "-A" in sys.argv:

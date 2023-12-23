@@ -25,10 +25,6 @@ import pymongo
 from bson import ObjectId
 import requests
 
-client = pymongo.MongoClient('mongodb://palatial:0UDUiKxwj7fI0@mongodb.mithyalabs.com:27017/palatial?directConnection=true&authSource=staging_db')
-db = client["palatial"]
-collection = db["changelogs"]
-
 exe_path = misc.get_exe_directory()
 env_values = dotenv_values(os.path.join(exe_path, ".env"))
 env_path = os.path.join(exe_path, ".env")
@@ -409,18 +405,6 @@ def deploy(argv):
               print("Finishing up. . . ", end="")
               sys.stdout.flush()
               misc.wait_for_status(branch, "Running", msg=". ")
-
-              url = "https://api.palatialxr.com/v1/k8s-components"
-              projectData = { "name": branch }
-              response = requests.post(url, json=projectData).json()
-
-              data = {
-                  "event": "importComplete",
-                  "subjectId": "null", #str(ObjectId(branch)),
-                  "subjectType": "projects",
-                  "podComponents": response["data"]
-              }
-              collection.insert_one(data)
 
         appInfo = {
           "customDockerBuild": use_firebase,

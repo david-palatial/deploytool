@@ -404,7 +404,7 @@ def deploy(argv):
             if app_only:
               print("Finishing up. . . ", end="")
               sys.stdout.flush()
-              misc.wait_for_status(branch, "Running", msg=". ")
+              #misc.wait_for_status(branch, "Running", msg=". ")
 
         appInfo = {
           "customDockerBuild": use_firebase,

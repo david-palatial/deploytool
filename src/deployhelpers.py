@@ -359,15 +359,24 @@ def deploy(argv):
 
     os.chdir(dir_name)
 
+    source_directory = os.getcwd()
+    destination_directory = None
+
     if not server_only:
         if not os.path.exists(os.path.join(os.getcwd(), "LinuxClient")) and not os.path.exists(os.path.join(os.getcwd(), "Linux")):
             print(f"error: directory Linux or LinuxClient does not exist in {os.path.abspath(os.getcwd())}")
             sys.exit(1)
 
         if os.path.exists(os.path.join(os.getcwd(), "Linux")):
-          os.chdir("Linux")
+          source_directory = os.path.join(source_directory, "Linux")
         elif os.path.exists(os.path.join(os.getcwd(), "LinuxClient")):
-          os.chdir("LinuxClient")
+          source_directory = os.path.join(source_directory, "LinuxClient")
+
+        destination_directory = source_directory + '_' + branch
+        print("Cloning build directory " + source_directory + "...")
+        shutil.copytree(source_directory, destination_directory)
+        print("Entering " + destination_directory)
+        os.chdir(destination_directory)
 
         if not self_selected_version:
           highestVersion = misc.get_highest_version(misc.get_versions(branch))
@@ -389,6 +398,10 @@ def deploy(argv):
               if os.path.exists(data["SourceFolder"]) and os.path.exists(data["DestinationFolder"]):
                 opt = "--skip-building"
             subprocess.run(f'image-builder create --package . --tag {env_values["REPOSITORY_URL"]}/{image_tag} {opt}')
+
+        print("Removing cloned directory...")
+        os.chdir(dir_name)
+        shutil.rmtree(destination_directory)
 
         if image_only:
           print("FINISHED")

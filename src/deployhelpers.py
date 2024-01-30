@@ -60,9 +60,9 @@ def switch_active_version(branch, version, path=None):
   misc.wait_for_status(branch, r"New|Running")
 
   if not path:
-    subprocess.run(f"sps-client application update --name {branch} --activeVersion {version}")
+    subprocess.run(["sps-client", "application", "update", "--name", branch, "--activeVersion", version])
   else:
-    subprocess.run(f"sps-client application update --name {branch} -f {path}")
+    subprocess.run(["sps-client", "application", "update", "--name", branch, "-f", path])
 
 def set_new_version(branch, version, owner=None, container_tag=None, resetting=False, path=options_path):
     existingVersions = misc.get_versions(branch)
@@ -74,10 +74,10 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
       container_tag = f"{env_values['REPOSITORY_URL']}/{branch}:{version}"
     if resetting == True:
         print("Deleting version...")
-        subprocess.run(f"sps-client version delete --name {version} --application {branch}")
+        subprocess.run(["sps-client", "version", "delete", "--name", version, "--application", branch])
 
     print("Creating new version...")
-    subprocess.run("timeout 2")
+    subprocess.run(["timeout", "2"])
 
     default_config = {
       "name": version,
@@ -105,7 +105,7 @@ def set_new_version(branch, version, owner=None, container_tag=None, resetting=F
         print("error: " + data["response"]["message"])
         sys.exit(1)
       print("Retrying...")
-      subprocess.run("timeout 2")
+      subprocess.run(["timeout", "2"])
       data = misc.get_sps_json_output(command)
       count += 1
 
@@ -156,7 +156,7 @@ def make_new_application(branch, version, tag=None, wait=True, owner=None):
     print("Creating application. . . ", end="")
     sys.stdout.flush()
     misc.wait_for_deleted(branch, msg=". ")
-    subprocess.run(f"sps-client application create --name {branch}")
+    subprocess.run(["sps-client", "application", "create", "--name", branch])
     set_new_version(branch, version, container_tag=tag, owner=owner)
 
 def reset_application(branch, version=None, container_tag=None, owner=None):
@@ -183,7 +183,7 @@ def reset_application(branch, version=None, container_tag=None, owner=None):
         break
 
   print(f"Delete {branch}...")
-  subprocess.run(f"sps-client application delete --name {branch}")
+  subprocess.run(["sps-client", "application", "delete", "--name", branch])
 
   make_new_application(branch, version, tag=container_tag, owner=owner, wait=True)
 
@@ -273,17 +273,14 @@ def deploy(argv):
       if starts_with_single_hyphen(argv[i]):
         for j in range(1, len(argv[i])):
           opt = argv[i][j]
-          match opt:
-            case 'A':
-              app_only = True
-            case 'C':
-              app_only = True
-            case 'S':
-              server_only = True
-            case 'I':
-              image_only = True
-            case 'F':
-              use_firebase = True
+          if opt == 'A' or opt == 'C':
+            app_only = True
+          if opt == 'S':
+            server_only = True
+          if opt == 'I':
+            image_only = True
+          if opt == 'F':
+            use_firebase = True
 
     if app_only and image_only:
       image_only = False
@@ -382,13 +379,13 @@ def deploy(argv):
             misc.build_docker_image(branch, image_tag=image_tag, is_client=True, owner=owner)
         else:
             opt = ""
-            
+
             path = os.path.join(".temp", "result.json")
             if os.path.exists(path):
               data = misc.load_json_content(path)
               if os.path.exists(data["SourceFolder"]) and os.path.exists(data["DestinationFolder"]):
                 opt = "--skip-building"
-            subprocess.run(f'image-builder create --package . --tag {env_values["REPOSITORY_URL"]}/{image_tag} {opt}')
+            subprocess.run(['image-builder', 'create', '--package', '.', '--tag', f"{env_values['REPOSITORY_URL']}/{image_tag}", opt])
 
         if image_only:
           print("FINISHED")
@@ -417,7 +414,7 @@ def deploy(argv):
     if not app_only:
         if not server_only:
           print("\n")
-        
+
         if not os.path.exists(os.path.join(os.getcwd(), "LinuxServer")):
             print(f"error: directory LinuxServer does not exist in {os.path.abspath(os.getcwd())}")
             sys.exit(1)
@@ -427,20 +424,20 @@ def deploy(argv):
 
         if exists:
           print("Stopping running server...")
-          subprocess.run(f'ssh -v {misc.host} "sudo systemctl stop server_{branch}.service"', stdout=subprocess.PIPE)
+          subprocess.run(['ssh', '-v', misc.host, 'sudo', 'systemctl', 'stop', f'server_{branch}.service'], stdout=subprocess.PIPE)
 
-        print("Making directory...")        
-        subprocess.run(f'ssh -v {misc.host} mkdir -p ~/servers/{branch}/LinuxServer', stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        print("Making directory...")
+        subprocess.run(['ssh', '-v', misc.host, 'mkdir', '-p', f'~/servers/{branch}/LinuxServer'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         print("Done")
 
         print("\nUploading server...")
-        subprocess.run(f'scp -r LinuxServer/* {misc.host}:~/servers/{branch}/LinuxServer/', shell=True, text=True, capture_output=False)
+        subprocess.run(['scp', '-r', 'LinuxServer/*', f'{misc.host}:~/servers/{branch}/LinuxServer/'], shell=True, text=True, capture_output=False)
 
         print("\nUpload complete\n")
 
         if exists:
           print("Starting server...")
-          subprocess.run(f'ssh -v {misc.host} "sudo systemctl start server_{branch}.service"', stdout=subprocess.PIPE)
+          subprocess.run(['ssh', '-v', misc.host, 'sudo', 'systemctl', 'start', f'server_{branch}.service'], stdout=subprocess.PIPE)
 
         data = {
           "dedicatedServerLocation": f"/home/david/servers/{branch}/"
@@ -459,6 +456,6 @@ def deploy(argv):
       if server_only:
         command += '-S'
 
-      subprocess.run(command)
+      subprocess.run([command])
 
     print("FINISHED")

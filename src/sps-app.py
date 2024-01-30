@@ -38,16 +38,18 @@ def download_kubectl():
   subprocess.run(powershell_cmd, shell=True)
 
 def GetKey():
-  ps_code = r"[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String((kubectl get secrets/sps-api-access-key --template='{{.data.restapiaccesskey}}')))"
+  import base64
+  ps_code = ["kubectl", "get", "secrets/sps-api-access-key", "--template={{.data.restapiaccesskey}}"]
 
   # Execute PowerShell code using subprocess
-  result = subprocess.run(ps_code, shell=True, executable=r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe", capture_output=True)
+  result = subprocess.run(ps_code, stdout=subprocess.PIPE)
 
   # Check the result
   if result.returncode == 0:
     # PowerShell command executed successfully
     output = result.stdout.strip()
-    return output.decode('utf-8')
+    output = output.decode('utf-8')
+    return base64.b64decode(output).decode('utf-8')
   return None
 
 def tag_has_repo(tag):
@@ -55,13 +57,13 @@ def tag_has_repo(tag):
     return len(parts) == 2 and all(parts)
 
 def reset_server(branch):
-  subprocess.run(f'ssh {misc.host} "sudo systemctl restart server_{branch}"')
+  subprocess.run(['ssh', misc.host, 'sudo', 'systemctl', 'restart', f'server_{branch}'])
 
 def commandExists(opt, options_list):
   if opt in options_list:
     return True
   try:
-    subprocess.run(f'sps-client application update --name example {opt}')
+    subprocess.run(['sps-client', 'application', 'update', '--name', 'example', opt])
     return True
   except subprocess.CalledProcessError as e:
     return False
@@ -142,10 +144,10 @@ def delete_applications(apps, client_only=False):
   if client_only:
     for i in range(0, len(apps)):
       print(f"Delete {apps[i]}...")
-      subprocess.run(f'sps-client application delete --name {apps[i]}')
+      subprocess.run(['sps-client', 'application', 'delete', '--name', apps[i]])
   else:
     branches = ' '.join(apps)
-    subprocess.run(f'ssh {misc.host} ./link-deployment/util/cleanup.sh {branches}')
+    subprocess.run(['ssh', misc.host, './link-deployment/util/cleanup.sh', branches])
 
 def reload_env_file(env_path, values):
   with open(env_path, 'w') as f:
@@ -261,7 +263,7 @@ elif command == "create":
   branch = sys.argv[2]
   exists, data = misc.try_get_application(branch)
   if not exists:
-    subprocess.run(f'sps-client application create --name {branch}')
+    subprocess.run(['sps-client', 'application', 'create', '--name', branch])
   elif "activeVersion" in data["response"]:
     print(f"error: {branch} already exists with an active version")
     sys.exit(1)
@@ -340,7 +342,7 @@ elif command == "update":
   rest = sys.argv[3:]
   rest_not_in_options = [elem for elem in rest if elem not in update_options]
   if rest_not_in_options:
-    subprocess.run(f"sps-client application update --name {branch} " + " ".join(rest_not_in_options))
+    subprocess.run(["sps-client", "application", "update", "--name", branch + " ".join(rest_not_in_options)])
 elif command == "restart-server":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_resetServer_help()
@@ -357,7 +359,7 @@ elif command == "shell":
   if len(sys.argv) > 3:
     help_menus.show_shell_help()
     sys.exit(1)
-  subprocess.run(f'ssh {misc.host}')
+  subprocess.run(['ssh', misc.host])
 elif command == "config":
   if len(sys.argv) < 3 or (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_config_help()
@@ -412,7 +414,7 @@ elif command == "config":
     if region != env_values['REGION'] or namespace != env_values['COREWEAVE_NAMESPACE'] or api_server != env_values['SPS_REST_API_SERVER'] or api_key != env_values['API_KEY']:
       sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
 
-      output = subprocess.run(f"sps-client config delete --name {env_values['SPS_REST_API_SERVER']}", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      output = subprocess.run(["sps-client", "config", "delete", "--name", env_values['SPS_REST_API_SERVER']], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
       result = output.stdout
       if output.stderr:
@@ -422,8 +424,8 @@ elif command == "config":
       if not "already exists" in result:
         print(result)
 
-      subprocess.run(f"sps-client config add --name {env_values['SPS_REST_API_SERVER']} --address {sps_rest_api_address} --access-key " + env_values['API_KEY'])
-      subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
+      subprocess.run(["sps-client", "config", "add", "--name", env_values['SPS_REST_API_SERVER'], "--address", sps_rest_api_address, "--access-key", env_values['API_KEY']])
+      subprocess.run(["sps-client", "config", "set-default", "--name", env_values['SPS_REST_API_SERVER']])
 
     env_values['REPOSITORY_URL'] = env_values['REPOSITORY_URL'].strip('/')
     reload_env_file(env_path, env_values)
@@ -443,7 +445,7 @@ elif command == "setup":
 
   username = requiredInput(f"Image registry username: ")
   password = requiredInput(f"Image registry password: ")
-  
+
   while not key:
     print(f"Copy the API key from https://apps.coreweave.com/#/c/default/ns/{env_values['COREWEAVE_NAMESPACE']}/apps/helm.packages/v1alpha1/{env_values['SPS_REST_API_SERVER']} and paste it below")
     key = input(f"API Key: ")
@@ -478,9 +480,9 @@ elif command == "setup":
 
   sps_rest_api_address = f"https://api.{env_values['COREWEAVE_NAMESPACE']}.{env_values['REGION']}.ingress.coreweave.cloud/"
 
-  subprocess.run(f"image-builder auth --username {env_values['REGISTRY_USERNAME']} --password {env_values['REGISTRY_PASSWORD']} --registry {env_values['IMAGE_REGISTRY_API']}")
+  subprocess.run(["image-builder", "auth", "--username", env_values['REGISTRY_USERNAME'], "--password", env_values['REGISTRY_PASSWORD'], "--registry", env_values['IMAGE_REGISTRY_API']])
 
-  output = subprocess.run(f"sps-client config add --name {env_values['SPS_REST_API_SERVER']} --address {sps_rest_api_address} --access-key " + env_values['API_KEY'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  output = subprocess.run(["sps-client", "config", "add", "--name", env_values['SPS_REST_API_SERVER'], "--address", sps_rest_api_address, "--access-key", env_values['API_KEY']], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   result = output.stdout
 
@@ -490,8 +492,8 @@ elif command == "setup":
   result = result.decode('utf-8')
   if not "already exists" in result:
     print(result)
-  
-  subprocess.run(f"sps-client config set-default --name {env_values['SPS_REST_API_SERVER']}")
+
+  subprocess.run(["sps-client", "config", "set-default", "--name", env_values['SPS_REST_API_SERVER']])
   key = generate_ssh_key_pair()
   if key:
     print("===> Setup complete. Send this public key to David: \n")
@@ -500,7 +502,7 @@ elif command == "restart-webpage":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_Restart_Webpage_help()
     sys.exit(0)
-  subprocess.run(f'ssh {misc.host} "sudo systemctl restart react-dom"')
+  subprocess.run(['ssh', misc.host, "sudo", "systemctl", "restart", "react-dom"])
 elif command == "version-info":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_Version_Info_help()
@@ -517,14 +519,14 @@ elif command == "version-info":
     remote_server_path = f'/var/log/cw-app-logs/{branch}/server/activeVersion.log'
     if misc.file_exists_on_remote(misc.host, remote_client_path):
       print("Client info:")
-      result = subprocess.run(f'ssh {misc.host} cat {remote_client_path}', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      result = subprocess.run(['ssh', misc.host, 'cat', remote_client_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       print(result.stdout.decode('utf-8'))
     else:
       print("No version information saved for client")
 
     if misc.file_exists_on_remote(misc.host, remote_server_path):
       print("Server info:")
-      result = subprocess.run(f'ssh {misc.host} cat {remote_server_path}', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      result = subprocess.run(['ssh', misc.host, 'cat', remote_server_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       print(result.stdout.decode('utf-8'))
     else:
       print("No version information saved for server")
@@ -539,18 +541,18 @@ elif command == "disable":
     sys.exit(1)
 
   print(f'statefulset.apps/sps-signalling-server-{app} scaled')
-  subprocess.run(f'kubectl scale statefulset sps-signalling-server-{app} --replicas=0', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  
+  subprocess.run(['kubectl', 'scale', 'statefulset', f'sps-signalling-server-{app}', '--replicas=0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
   print(f'deployment.apps/sps-auth-{app} scaled')
-  subprocess.run(f'kubectl scale deployment sps-auth-{app} --replicas=0', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run(['kubectl', 'scale', 'deployment', f'sps-auth-{app}', '--replicas=0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   print(f'deployment.apps/sps-instance-manager-{app} scaled')
-  subprocess.run(f'kubectl scale deployment sps-instance-manager-{app} --replicas=0', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run(['kubectl', 'scale', 'deployment', f'sps-instance-manager-{app}', '--replicas=0'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-  subprocess.run(f"sps-client application update -n {app} --activeVersion \"\"", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run(["sps-client", "application", "update", "-n", app, '--activeVersion', '""'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   print(f"Stopping unit server_{app}.service...")
-  subprocess.run(f'ssh {misc.host} sudo systemctl stop server_{app}')
+  subprocess.run(['ssh', misc.host, 'sudo', 'systemctl', 'stop', f'server_{app}'])
 
 elif command == "enable":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
@@ -576,18 +578,18 @@ elif command == "enable":
   # Get the index of the latest datetime
   latest_datetime_index = datetime_objects.index(latest_datetime)
 
-  subprocess.run(f'sps-client application update -n {app} --activeVersion {versions[latest_datetime_index]["name"]}', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run(['sps-client', 'application', 'update', '-n', app, '--activeVersion' f'{versions[latest_datetime_index]["name"]}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   print(f'deployment.apps/sps-instance-manager-{app} scaled')
-  subprocess.run(f'kubectl scale deployment sps-instance-manager-{app} --replicas=1', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run(['kubectl', 'scale', 'deployment', f'sps-instance-manager-{app}', '--replicas=1'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   print(f'deployment.apps/sps-auth-{app} scaled')
-  subprocess.run(f'kubectl scale deployment sps-auth-{app} --replicas=1', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run(['kubectl', 'scale', 'deployment', f'sps-auth-{app}', '--replicas=1'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   print(f'statefulset.apps/sps-signalling-server-{app} scaled')
-  subprocess.run(f'kubectl scale statefulset sps-signalling-server-{app} --replicas=1', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  subprocess.run(['kubectl', 'scale', 'statefulset', f'sps-signalling-server-{app}', '--replicas=1'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   print(f"Starting unit server_{app}.service...")
-  subprocess.run(f'ssh {misc.host} sudo systemctl start server_{app}')
+  subprocess.run(['ssh', misc.host, 'sudo', 'systemctl', 'start', f'server_{app}'])
 elif command == "create-link":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_createLink_help()
@@ -595,12 +597,12 @@ elif command == "create-link":
 
   url = sys.argv[2]
 
-  command = f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py {url} '
+  command = ['ssh', misc.host, 'sudo', '-E', 'python3', '~/link-deployment/run_pipeline.py', url]
 
   if "-C" in sys.argv or "-A" in sys.argv:
-    command += '-C '
+    command.append('-C')
   if "-S" in sys.argv:
-    command += '-S '
+    command.append('-S')
 
   subprocess.run(command)
 else:

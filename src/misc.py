@@ -111,6 +111,9 @@ def try_get_application(name):
     output = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     json_data = output.stdout
+
+    if json_data == b"":
+      return False, None
     
     if output.stderr:
       prefix = "Error: "

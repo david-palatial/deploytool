@@ -45,8 +45,9 @@ def install_kubectl():
     print("on windows")
     kube_folder = os.path.join(os.environ.get("USERPROFILE"), ".kube")
     k8s_script = os.path.join(exe_path, "dist", "k8ctl_setup.ps1")
-    ps_script = "$([scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/coreweave/kubernetes-cloud/master/getting-started/k8ctl_setup.ps1')))"
-    process = subprocess.Popen(["start", "powershell", "-NoExit", "-ExecutionPolicy", "ByPass", "-File", k8s_script], shell=True)
+    ps_script = "& $([scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/coreweave/kubernetes-cloud/master/getting-started/k8ctl_setup.ps1')))"
+    #process = subprocess.Popen(["start", "powershell", "-NoExit", "-ExecutionPolicy", "ByPass", "-File", k8s_script], shell=True)
+    process = subprocess.Popen(["powershell", "-Command", ps_script])
     process.wait()
     print("downloaded")
     print("making directory")

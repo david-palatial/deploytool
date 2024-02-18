@@ -45,7 +45,8 @@ def install_kubectl():
     print("on windows")
     kube_folder = os.path.join(os.environ.get("USERPROFILE"), ".kube")
     ps_script = os.path.join(exe_path, "dist", "k8ctl_setup.ps1")
-    subprocess.run(["powershell", '-ExecutionPolicy', 'Bypass', '-File', ps_script], shell=True, check=True)
+    process = subprocess.Popen(["powershell", '-ExecutionPolicy', 'Bypass', '-File', ps_script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
     os.makedirs(kube_folder, exist_ok=True)
 
     with open(config_path, 'rb') as source_file:

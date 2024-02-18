@@ -47,14 +47,17 @@ def install_kubectl():
     ps_script = os.path.join(exe_path, "dist", "k8ctl_setup.ps1")
     process = subprocess.Popen(["powershell", '-ExecutionPolicy', 'Bypass', '-File', ps_script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
+    print("making directory")
     os.makedirs(kube_folder, exist_ok=True)
 
     with open(config_path, 'rb') as source_file:
       config_content = source_file.read()
 
+    print("copying over")
     destination_file = os.path.join(kube_folder, "config")
     with open(destination_file, 'wb') as dest_file:
       dest_file.write(config_content)
+    print("done installing")
   else:
     print("kubectl install failed: Unsupported operating system.")
 
@@ -464,6 +467,7 @@ elif command == "setup":
   install_kubectl()
 
   env_values = dotenv_values(os.path.join(exe_path, 'default.env'))
+  print("getting key...")
   key = GetKey()
 
   username = requiredInput(f"Image registry username: ")

@@ -52,11 +52,9 @@ def install_kubectl():
     with open(config_path, 'rb') as source_file:
       config_content = source_file.read()
 
-    print("copying over")
     destination_file = os.path.join(kube_folder, "config")
     with open(destination_file, 'wb') as dest_file:
       dest_file.write(config_content)
-    print("done installing")
   else:
     print("kubectl install failed: Unsupported operating system.")
 
@@ -466,7 +464,6 @@ elif command == "setup":
   install_kubectl()
 
   env_values = dotenv_values(os.path.join(exe_path, 'default.env'))
-  print("getting key...")
   key = GetKey()
 
   username = requiredInput(f"Image registry username: ")

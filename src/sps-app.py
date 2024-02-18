@@ -45,7 +45,7 @@ def install_kubectl():
     print("on windows")
     kube_folder = os.path.join(os.environ.get("USERPROFILE"), ".kube")
     ps_script = "$([scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/coreweave/kubernetes-cloud/master/getting-started/k8ctl_setup.ps1')))"
-    process = subprocess.Popen(["powershell", '-Command', ps_script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(["start", "powershell", '-Command', ps_script], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.wait()
     print("downloaded")
     print("making directory")
@@ -465,7 +465,7 @@ elif command == "setup":
     print("sps-app is already set up. To update specific options see sps-app config --help")
     sys.exit(0)
 
-  #install_kubectl()
+  install_kubectl()
 
   env_values = dotenv_values(os.path.join(exe_path, 'default.env'))
   print("getting key...")

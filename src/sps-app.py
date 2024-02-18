@@ -12,30 +12,48 @@ import deployhelpers
 from dotenv import dotenv_values
 import getpass
 from datetime import datetime
+import platform
 
 exe_path = misc.get_exe_directory()
 env_values = dotenv_values(os.path.join(exe_path, ".env"))
 env_path = os.path.join(exe_path, ".env")
 
 def copy_config_to_kube():
-  # Check if the config file exists
   if os.path.isfile(config_file):
     kube_dir = os.path.join(os.environ.get("USERPROFILE"), ".kube")
 
-    # Create .kube folder if it doesn't exist
     if not os.path.exists(kube_dir):
       os.makedirs(kube_dir)
 
-    # Copy the config file to .kube folder
     shutil.copy2(config_file, kube_dir)
     print("Config file copied successfully.")
   else:
     print("Config file does not exist.")
 
-def download_kubectl():
-  code = "& $([scriptblock]::Create((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/coreweave/kubernetes-cloud/master/getting-started/k8ctl_setup.ps1'))) -Silent"
-  powershell_cmd = ["powershell.exe", "-ExecutionPolicy", "Bypass", "-Command", code]
-  subprocess.run(powershell_cmd, shell=True)
+def install_kubectl():
+  config_path = os.path.join(exe_path, "dist", "cw-kubeconfig")
+
+  if platform.system() == "Linux":
+    subprocess.run(["curl", "-LO", "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"])
+    subprocess.run(["chmod", "+x", "./kubectl"])
+    subprocess.run(["sudo", "mv", "./kubectl", "/usr/local/bin/kubectl"])
+    subprocess.run(["mkdir", "~/.kube"])
+    subprocess.run(["cp", config_path, "~/.kube/config"])
+
+  elif platform.system() == "Windows":
+    kube_folder = os.path.join(os.environ.get("USERPROFILE"), ".kube")
+    ps_script = os.path.join(exe_path, "dist", "k8ctl_setup.ps1")
+    subprocess.run(["powershell", '-ExecutionPolicy', 'Bypass', '-File', ps_script], shell=True, check=True)
+    os.makedirs(kube_folder, exist_ok=True)
+
+    with open(config_path, 'rb') as source_file:
+      config_content = source_file.read()
+
+    destination_file = os.path.join(kube_folder, "config")
+    with open(destination_file, 'wb') as dest_file:
+      dest_file.write(config_content)
+  else:
+    print("kubectl install failed: Unsupported operating system.")
 
 def GetKey():
   import base64
@@ -437,8 +455,10 @@ elif command == "setup":
   force = len(sys.argv) == 3 and (sys.argv[2] == "-f" or sys.argv[2] == "--force")
 
   if not force and os.path.exists(env_path):
-    print("sps-app is already set up. To update specific settings see sps-app config --help")
+    print("sps-app is already set up. To update specific options see sps-app config --help")
     sys.exit(0)
+
+  install_kubectl()
 
   env_values = dotenv_values(os.path.join(exe_path, 'default.env'))
   key = GetKey()

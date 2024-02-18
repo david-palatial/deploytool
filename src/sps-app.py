@@ -31,6 +31,7 @@ def copy_config_to_kube():
     print("Config file does not exist.")
 
 def install_kubectl():
+  print("installing kubectl...")
   config_path = os.path.join(exe_path, "dist", "cw-kubeconfig")
 
   if platform.system() == "Linux":
@@ -41,6 +42,7 @@ def install_kubectl():
     subprocess.run(["cp", config_path, "~/.kube/config"])
 
   elif platform.system() == "Windows":
+    print("on windows")
     kube_folder = os.path.join(os.environ.get("USERPROFILE"), ".kube")
     ps_script = os.path.join(exe_path, "dist", "k8ctl_setup.ps1")
     subprocess.run(["powershell", '-ExecutionPolicy', 'Bypass', '-File', ps_script], shell=True, check=True)

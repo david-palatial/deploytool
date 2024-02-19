@@ -461,6 +461,8 @@ elif command == "setup":
     print("sps-app is already set up. To update specific options see sps-app config --help")
     sys.exit(0)
 
+  if platform.system() == "Windows":
+    subprocess.call([f"{exe_path}/setup.bat"], shell=True)
   install_kubectl()
 
   env_values = dotenv_values(os.path.join(exe_path, 'default.env'))

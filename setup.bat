@@ -1,10 +1,12 @@
 @echo off
+
 set "batch_dir=%~dp0"
 set "directory=%batch_dir%\dist"
 
-if not "%PATH%" == "%PATH:;%directory;=%" (
-    echo Setup complete *2.
+echo %PATH% | find "%directory%" > nul
+if %errorlevel% equ 0 (
+    echo The directory is already in the user PATH.
 ) else (
-    setx PATH "%directory%;%PATH%" /M
-    echo Setup complete *1.
+    setx PATH "%PATH%;%directory%"
+    echo Directory added to the user PATH.
 )

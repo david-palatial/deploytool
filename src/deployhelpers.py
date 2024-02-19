@@ -437,10 +437,10 @@ def deploy(argv):
 
         if exists:
           print("Stopping running server...")
-          subprocess.run(['ssh', '-v', misc.host, 'sudo', 'systemctl', 'stop', f'server_{branch}.service'], stdout=subprocess.PIPE)
+          misc.execute_ssh_command(f'sudo systemctl stop server_{branch}.service')
 
         print("Making directory...")
-        subprocess.run(['ssh', '-v', misc.host, 'mkdir', '-p', f'~/servers/{branch}/LinuxServer'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        misc.execute_ssh_command(f'mkdir -p ~/servers/{branch}/LinuxServer')
         print("Done")
 
         print("\nUploading server...")
@@ -450,7 +450,7 @@ def deploy(argv):
 
         if exists:
           print("Starting server...")
-          subprocess.run(['ssh', '-v', misc.host, 'sudo', 'systemctl', 'start', f'server_{branch}.service'], stdout=subprocess.PIPE)
+          misc.execute_ssh_command(f'sudo systemctl start server_{branch}.service')
 
         data = {
           "dedicatedServerLocation": f"/home/david/servers/{branch}/"
@@ -459,7 +459,7 @@ def deploy(argv):
         misc.save_version_info(branch, data, client=False)
 
     if create_link:
-      command = f'ssh {misc.host} sudo -E python3 ~/link-deployment/run_pipeline.py '
+      command = f'sudo -E python3 ~/link-deployment/run_pipeline.py '
       if owner:
         command += f'https://{owner}.palatialxr.com/{branch} '
       else:
@@ -469,6 +469,6 @@ def deploy(argv):
       if server_only:
         command += '-S'
 
-      subprocess.run([command])
+      print(misc.execute_ssh_command(command))
 
     print("FINISHED")

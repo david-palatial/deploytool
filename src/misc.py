@@ -13,6 +13,30 @@ import shutil
 import sys
 import time
 from dotenv import dotenv_values
+import paramiko
+
+def execute_ssh_command(command):
+  home_directory = os.path.expanduser("~")
+  hostname = "palatial.tenant-palatial-platform.coreweave.cloud"
+  port = 22
+  username = "david"
+  private_key_path = os.path.join(home_directory, ".ssh", "id_rsa")
+
+  client = paramiko.SSHClient()
+  client.load_system_host_keys()
+
+  client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+  try:
+    client.connect(hostname, port, username, key_filename=private_key_path)
+    stdin, stdout, stderr = client.exec_command(command)
+    if stderr.channel.recv_exit_status() != 0:
+      raise Exception(f"Failure executing the remote script: {stderr.read().decode()}")
+    return stdout.read().decode()
+  except Exception as e:
+    return None
+  finally:
+    client.close()
 
 def get_exe_directory():
   if getattr(sys, 'frozen', False):  # Check if the script is running as a frozen executable
@@ -32,11 +56,11 @@ host = env_values.get('HOST', 'david@palatial.tenant-palatial-platform.coreweave
 
 def file_exists_on_remote(host, remote_file_path):
     try:
-        # SSH command to check if the file exists
-        command = f'ssh -v {host} test -f {remote_file_path} && echo True || echo False'
+        # check if the file exists
+        command = f'test -f {remote_file_path} && echo True || echo False'
 
         # Run the command and suppress the output
-        result = subprocess.run(command, shell=True, text=True, stdout=subprocess.PIPE)
+        result = execute_ssh_command(command)
 
         output = result.stdout.strip()
         exists = True if output == 'True' else False
@@ -215,7 +239,7 @@ def write_to_remote(file_path, data):
   base_filename = os.path.basename(tmp)
 
   subprocess.run('scp {}.copy {}:~/.tmp/'.format(tmp, host), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  subprocess.run('ssh {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, file_path), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  execute_ssh_command("cat ~/.tmp/{}.copy | sudo tee {}".format(host, base_filename, file_path))
 
 def dict_to_string(data):
     result = ""
@@ -336,11 +360,11 @@ def save_version_info(branch, data={}, client=True):
           timeLastUpdated = versions[i]["timeLastUpdated"]
 
   if client:
-    subprocess.run(f'ssh -v {host} sudo mkdir -p /var/log/cw-app-logs/{branch}/client', stdout=subprocess.PIPE)
+    execute_ssh_command('sudo mkdir -p /var/log/cw-app-logs/{branch}/client')
     versionInfoAddress = f'/var/log/cw-app-logs/{branch}/client/{version}_{current_datetime.strftime("%Y%m%d-%H_%M_%S")}.log'
     activeVersionAddress = f'/var/log/cw-app-logs/{branch}/client/activeVersion.log'
   else:
-    subprocess.run(f'ssh -v {host} sudo mkdir -p /var/log/cw-app-logs/{branch}/server', stdout=subprocess.PIPE)
+    execute_ssh_command('sudo mkdir -p /var/log/cw-app-logs/{branch}/server')
     versionInfoAddress = f'/var/log/cw-app-logs/{branch}/server/{version}_{date}.log'
     activeVersionAddress = f'/var/log/cw-app-logs/{branch}/server/activeVersion.log'
 
@@ -380,8 +404,8 @@ def save_version_info(branch, data={}, client=True):
   base_filename = os.path.basename(tmp)
 
   subprocess.run('scp {}.copy {}:~/.tmp/'.format(tmp, host), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  subprocess.run('ssh -v {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, versionInfoAddress), shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  subprocess.run('ssh -v {} "cat ~/.tmp/{}.copy | sudo tee {}"'.format(host, base_filename, activeVersionAddress), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  execute_ssh_command('cat ~/.tmp/{}.copy | sudo tee {}'.format(host, base_filename, versionInfoAddress))
+  execute_ssh_command("cat ~/.tmp/{}.copy | sudo tee {}".format(host, base_filename, activeVersionAddress))
 
   os.remove(tmp)
   os.remove(f"{tmp}.copy")

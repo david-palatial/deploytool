@@ -78,7 +78,7 @@ def tag_has_repo(tag):
     return len(parts) == 2 and all(parts)
 
 def reset_server(branch):
-  subprocess.run(['ssh', misc.host, 'sudo', 'systemctl', 'restart', f'server_{branch}'])
+  execute_ssh_command(f'sudo systemctl restart server_{branch}')
 
 def commandExists(opt, options_list):
   if opt in options_list:
@@ -168,7 +168,7 @@ def delete_applications(apps, client_only=False):
       subprocess.run(['sps-client', 'application', 'delete', '--name', apps[i]])
   else:
     branches = ' '.join(apps)
-    subprocess.run(['ssh', misc.host, './link-deployment/util/cleanup.sh', branches])
+    print(misc.execute_ssh_command(f'./link-deployment/util/cleanup.sh {branches}'))
 
 def reload_env_file(env_path, values):
   with open(env_path, 'w') as f:
@@ -527,7 +527,7 @@ elif command == "restart-webpage":
   if len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_Restart_Webpage_help()
     sys.exit(0)
-  subprocess.run(['ssh', misc.host, "sudo", "systemctl", "restart", "react-dom"])
+  misc.execute_ssh_command(f'sudo systemctl restart react-dom')
 elif command == "version-info":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_Version_Info_help()
@@ -544,15 +544,15 @@ elif command == "version-info":
     remote_server_path = f'/var/log/cw-app-logs/{branch}/server/activeVersion.log'
     if misc.file_exists_on_remote(misc.host, remote_client_path):
       print("Client info:")
-      result = subprocess.run(['ssh', misc.host, 'cat', remote_client_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-      print(result.stdout.decode('utf-8'))
+      result = execute_ssh_command(f'cat {remote_client_path}')
+      print(result)
     else:
       print("No version information saved for client")
 
     if misc.file_exists_on_remote(misc.host, remote_server_path):
       print("Server info:")
-      result = subprocess.run(['ssh', misc.host, 'cat', remote_server_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-      print(result.stdout.decode('utf-8'))
+      result = execute_ssh_command(f'cat {remote_server_path}')
+      print(result)
     else:
       print("No version information saved for server")
 elif command == "disable":
@@ -577,7 +577,7 @@ elif command == "disable":
   subprocess.run(["sps-client", "application", "update", "-n", app, '--activeVersion', '""'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
   print(f"Stopping unit server_{app}.service...")
-  subprocess.run(['ssh', misc.host, 'sudo', 'systemctl', 'stop', f'server_{app}'])
+  execute_ssh_command(f'sudo systemctl stop server_{app}')
 
 elif command == "enable":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
@@ -614,7 +614,7 @@ elif command == "enable":
   print(f'statefulset.apps/sps-signalling-server-{app} scaled')
   subprocess.run(['kubectl', 'scale', 'statefulset', f'sps-signalling-server-{app}', '--replicas=1'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   print(f"Starting unit server_{app}.service...")
-  subprocess.run(['ssh', misc.host, 'sudo', 'systemctl', 'start', f'server_{app}'])
+  execute_ssh_command(f'sudo systemctl start server_{app}')
 elif command == "create-link":
   if len(sys.argv) == 2 or len(sys.argv) == 3 and (sys.argv[2] == "-h" or sys.argv[2] == "--help"):
     help_menus.show_createLink_help()
@@ -622,14 +622,14 @@ elif command == "create-link":
 
   url = sys.argv[2]
 
-  command = ['ssh', misc.host, 'sudo', '-E', 'python3', '~/link-deployment/run_pipeline.py', url]
+  command = f'sudo -E python3 ~/link-deployment/run_pipeline.py {url} '
 
   if "-C" in sys.argv or "-A" in sys.argv:
-    command.append('-C')
+    command += '-C'
   if "-S" in sys.argv:
-    command.append('-S')
+    command += '-S'
 
-  subprocess.run(command)
+  print(misc.execute_ssh_command(command))
 else:
   for i in range(1, len(sys.argv)):
     opt = sys.argv[i]

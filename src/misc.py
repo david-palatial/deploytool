@@ -257,10 +257,10 @@ def build_docker_image(branch, image_tag, is_client=True, owner=None):
     directory_name = os.path.basename(current_directory)
 
     # Check if the directory name is "Linux" (case-sensitive)
-    if directory_name == "Linux":
-        folder_type = ""
-    else:
+    if "Client" in directory_name:
         folder_type = "Client"
+    else:
+        folder_type = ""
 
     # Add dependencies if image tag does not exist
     client = None

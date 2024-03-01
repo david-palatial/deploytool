@@ -11,5 +11,6 @@ cp $current_directory/dist/cw-kubeconfig ~/.kube/config
 if ! grep -q "sps-app='./$current_directory/dist/sps-app'" ~/.bashrc; then
   echo sps-app='./$current_directory/dist/sps-app' >> ~/.bashrc
   source ~/.bashrc
+fi
 
 sps-app setup

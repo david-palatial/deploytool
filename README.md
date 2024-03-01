@@ -3,6 +3,4 @@ Built with pyinstaller, the tool used by Palatial to deploy scalable pixel strea
 
 # Installation
 
-Once downloaded, add the deploytool/dist directory to your PATH environment variable.
-
-Then run `sps-app setup` from the command line.
+On Windows run `setup.bat`, on Linux run `setup.sh`

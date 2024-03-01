@@ -38,8 +38,6 @@ def install_kubectl():
     subprocess.run(["curl", "-LO", "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"])
     subprocess.run(["chmod", "+x", "./kubectl"])
     subprocess.run(["sudo", "mv", "./kubectl", "/usr/local/bin/kubectl"])
-    subprocess.run(["mkdir", "~/.kube"])
-    subprocess.run(["cp", config_path, "~/.kube/config"])
 
   elif platform.system() == "Windows":
     kube_folder = os.path.join(os.environ.get("USERPROFILE"), ".kube")

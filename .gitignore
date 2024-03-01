@@ -2,6 +2,7 @@
 build
 __pycache__
 *.sh
+!setup.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -9,5 +9,5 @@ if %errorlevel% equ 0 (
 ) else (
     setx PATH "%PATH%;%directory%"
     echo Directory added to the user PATH.
-    sps-app setup
+    start sps-app setup
 )

@@ -352,7 +352,7 @@ def deploy(argv):
     if branch == None:
         branch = misc.generate_random_string()
 
-    branch = branch[:15].replace('_', '-').replace('.', '-').lower()
+    branch = branch[:20].replace('_', '-').replace('.', '-').lower()
 
     os.chdir(dir_name)
 
